@@ -1,0 +1,31 @@
+[package]
+name = "cichlid"
+version = "0.1.0"
+authors = ["Stephen Fleischman <stephenf@cs.washington.edu>"]
+edition = "2018"
+
+[lib]
+name = "cichlid"
+path = "src/lib.rs"
+test = true
+doctest = true
+crate-type = ["rlib"]
+
+[features]
+no-std = []
+default = []
+
+[profile.dev]
+opt-level = 1
+debug = true
+codegen-units = 1
+debug-assertions = false
+
+[profile.release]
+opt-level = 3
+debug = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+incremental = false
+overflow-checks = false
