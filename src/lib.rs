@@ -7,6 +7,7 @@ pub mod trig;
 pub mod color_codes;
 pub mod rgb;
 pub mod hsv;
+pub mod gradient;
 
 pub use crate::rgb::ColorRGB;
 pub use crate::hsv::HSV;

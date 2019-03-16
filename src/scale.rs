@@ -37,12 +37,14 @@ pub fn dim8_lin(_c: u8) -> u8 {
 }
 
 /// inverse of the dimming function, brighten a value
+#[inline]
 pub fn brighten8_raw(c: u8) -> u8 {
     let ic = 255 - c;
     255 - scale8(ic, ic)
 }
 
 /// inverse of the dimming function, brighten a value
+#[inline]
 pub fn brighten8_video(c: u8) -> u8 {
     let ic = 255 - c;
     255 - scale8_video(ic, ic)
