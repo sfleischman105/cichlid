@@ -20,6 +20,7 @@ use std::ops::{
 };
 
 use crate::scale::*;
+use crate::HSV;
 
 pub trait RGBOrder {
     const FIRST: usize;
@@ -336,6 +337,12 @@ impl From<[u8; 3]> for ColorRGB {
     #[inline(always)]
     fn from(other: [u8; 3]) -> Self {
         unsafe { transmute(other) }
+    }
+}
+
+impl From<HSV> for ColorRGB {
+    fn from(hsv: HSV) -> Self {
+        hsv.to_rgb_rainbow()
     }
 }
 

@@ -3,10 +3,17 @@ use core::mem::transmute;
 #[cfg(not(feature="no-std"))]
 use std::mem::transmute;
 
+#[cfg(feature="no-std")]
+use core::hint::unreachable_unchecked;
+#[cfg(not(feature="no-std"))]
+use std::hint::unreachable_unchecked;
+
 use crate::ColorRGB;
 use crate::scale::*;
 
 const HSV_SECTION_3: u8 = 0x40;
+
+
 
 #[derive(Copy, Clone, Default, Eq, PartialEq)]
 pub struct HSV {
@@ -79,13 +86,20 @@ impl HSV {
         let hue: u8 = self.h;
         let sat: u8 = self.s;
         let val: u8 = self.v;
+
+        if sat == 0 {
+            return ColorRGB::new(255, 255, 255);
+        } else if sat == 0 {
+            return ColorRGB::new(0, 0, 0);
+        }
         let offset: u8 = hue & 0x1F;
-        let mut offset8 = offset;
-        offset8 <<= 3;
+        let offset8 = offset << 3;
+        //offset8 <<= 3;
 
         let third: u8 = scale8(offset8, 85);
 
-        let mut rgb: ColorRGB = match (hue & 0b1110_000) >> 3 {
+
+        let mut rgb: ColorRGB = match (hue & 0b1110_0000) >> 5 {
             0b000 => ColorRGB::new(255 - third, third, 0),
             0b001 => ColorRGB::new(171, 85 + third, 0),
             0b010 => {
@@ -95,31 +109,26 @@ impl HSV {
             0b011 => ColorRGB::new(0, 255 - third, third),
             0b100 => {
                 let two_thirds = scale8(offset8, ((256u16 * 2) / 3) as u8);
-                ColorRGB::new(0, 171 - two_thirds, 85 - two_thirds)
+                ColorRGB::new(0, 171 - two_thirds, 85 + two_thirds)
             }
             0b101 => ColorRGB::new(third, 0, 255 - third),
             0b110 => ColorRGB::new(85 + third, 0, 171 - third),
             0b111 => ColorRGB::new(170 + third, 0, 85 - third),
-            _ => unreachable!(),
+            _ => unsafe {unreachable_unchecked()}
         };
 
+
         if sat != 255 {
-            if sat == 0 {
-                rgb = ColorRGB::new(255, 255, 255);
-            } else {
-                rgb.modify_all(|c| scale8(c, sat));
-                let desat = 255 - sat;
-                let brightness_floor = scale8(desat, desat);
-                rgb.modify_all(|c| c + brightness_floor);
-            }
+            // Already checked for sat == 0;
+            rgb.modify_all(|c| scale8(c, sat));
+            let desat = 255 - sat;
+            let brightness_floor = scale8(desat, desat);
+            rgb.modify_all(|c| c + brightness_floor);
         }
 
         if val != 255 {
-            if sat == 0 {
-                rgb = ColorRGB::new(0, 0, 0);
-            } else {
-                rgb.modify_all(|c| scale8(c, val));
-            }
+            // Already checked for val == 0
+            rgb.modify_all(|c| scale8(c, val));
         }
 
         rgb
@@ -182,4 +191,49 @@ impl HSV {
             )
         }
     }
+
+    pub fn maximize_brightness(&mut self) {
+        self.v = 255;
+    }
 }
+
+#[cfg(test)]
+mod test {
+    use crate::{HSV, ColorRGB};
+
+    fn into_360(n: u8) -> u32 {
+        ((n as u32) * 360) >> 8
+    }
+
+    #[test]
+    fn hsv2rgb_rainbow_6h() {
+        for h in (0..=255).step_by(42) {
+            let hsv = HSV::new(h as u8, 255, 255);
+            let rgb: ColorRGB = ColorRGB::from(hsv);
+        }
+    }
+
+    #[test]
+    fn hsv2rgb_rainbow_256h() {
+        for h in (0..=255).step_by(1) {
+            let hsv = HSV::new(h as u8, 255, 255);
+            let rgb: ColorRGB = ColorRGB::from(hsv);
+
+        }
+    }
+
+    #[test]
+    fn hsv2rgb_rainbow_all() {
+        for h in (0..=255).step_by(1) {
+            for s in (0..=255).step_by(15) {
+                for v in (0..=255).step_by(15) {
+                    let hsv = HSV::new(h as u8, s as u8, v as u8);
+                    let rgb: ColorRGB = ColorRGB::from(hsv);
+                    //println!("hsv ({},{},{}) -> r: {}, g: {}, b: {}\n", h, s, v, rgb.r, rgb.g, rgb.b);
+                }
+            }
+        }
+    }
+}
+
+
