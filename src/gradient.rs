@@ -39,7 +39,7 @@ impl GradientDirection {
 
     #[inline]
     pub fn into_hue_distance(self, start_hue: u8, end_hue: u8) -> i16 {
-        let hue_diff: u8 = end_hue - start_hue;
+        let hue_diff: u8 = end_hue.wrapping_sub(start_hue);
         let new_dir = self.into_direction(hue_diff);
         if new_dir == GradientDirection::Forward {
             (hue_diff as i16) << 7
