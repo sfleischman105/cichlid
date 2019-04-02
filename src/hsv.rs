@@ -13,7 +13,34 @@ use crate::scale::*;
 
 const HSV_SECTION_3: u8 = 0x40;
 
+/// Converts hue to value at full brightness
+#[inline]
+pub fn hue_to_full_rgb(hue: u8) -> ColorRGB {
+    let offset: u8 = hue & 0x1F;
+    let offset8 = offset << 3;
 
+    let third: u8 = scale8(offset8, 85);
+
+    let rgb: ColorRGB = match (hue & 0b1110_0000) >> 5 {
+        0b000 => ColorRGB::new(255 - third, third, 0),
+        0b001 => ColorRGB::new(171, 85 + third, 0),
+        0b010 => {
+            let two_thirds = scale8(offset8, ((256u16 * 2) / 3) as u8);
+            ColorRGB::new(171 - two_thirds, 170 + third, 0)
+        }
+        0b011 => ColorRGB::new(0, 255 - third, third),
+        0b100 => {
+            let two_thirds = scale8(offset8, ((256u16 * 2) / 3) as u8);
+            ColorRGB::new(0, 171 - two_thirds, 85 + two_thirds)
+        }
+        0b101 => ColorRGB::new(third, 0, 255 - third),
+        0b110 => ColorRGB::new(85 + third, 0, 171 - third),
+        0b111 => ColorRGB::new(170 + third, 0, 85 - third),
+        _ => unsafe {unreachable_unchecked()}
+    };
+
+    rgb
+}
 
 #[derive(Copy, Clone, Default, Eq, PartialEq)]
 pub struct HSV {
@@ -89,34 +116,11 @@ impl HSV {
 
         if sat == 0 {
             return ColorRGB::new(255, 255, 255);
-        } else if sat == 0 {
+        } else if val == 0 {
             return ColorRGB::new(0, 0, 0);
         }
-        let offset: u8 = hue & 0x1F;
-        let offset8 = offset << 3;
-        //offset8 <<= 3;
 
-        let third: u8 = scale8(offset8, 85);
-
-
-        let mut rgb: ColorRGB = match (hue & 0b1110_0000) >> 5 {
-            0b000 => ColorRGB::new(255 - third, third, 0),
-            0b001 => ColorRGB::new(171, 85 + third, 0),
-            0b010 => {
-                let two_thirds = scale8(offset8, ((256u16 * 2) / 3) as u8);
-                ColorRGB::new(171 - two_thirds, 170 + third, 0)
-            }
-            0b011 => ColorRGB::new(0, 255 - third, third),
-            0b100 => {
-                let two_thirds = scale8(offset8, ((256u16 * 2) / 3) as u8);
-                ColorRGB::new(0, 171 - two_thirds, 85 + two_thirds)
-            }
-            0b101 => ColorRGB::new(third, 0, 255 - third),
-            0b110 => ColorRGB::new(85 + third, 0, 171 - third),
-            0b111 => ColorRGB::new(170 + third, 0, 85 - third),
-            _ => unsafe {unreachable_unchecked()}
-        };
-
+        let mut rgb = hue_to_full_rgb(hue);
 
         if sat != 255 {
             // Already checked for sat == 0;
