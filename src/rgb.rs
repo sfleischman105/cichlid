@@ -21,6 +21,7 @@ use std::ops::{
 
 use crate::scale::*;
 use crate::HSV;
+use crate::power_mgmt::{PowerEstimator};
 
 pub trait RGBOrder {
     const FIRST: usize;
@@ -146,6 +147,23 @@ impl ColorRGB {
     }
 
     #[inline]
+    pub fn scale(&mut self, scale: u8) {
+        nscale8x3(&mut self.r, &mut self.g, &mut self.b, scale);
+    }
+
+    #[inline]
+    pub fn scale_from_other(&mut self, other: &ColorRGB) {
+        nscale8(&mut self.r, other.r);
+        nscale8(&mut self.g, other.g);
+        nscale8(&mut self.b, other.b);
+    }
+
+    #[inline]
+    pub fn fade_to_black_by(&mut self, fade: u8) {
+        nscale8x3(&mut self.r, &mut self.g, &mut self.b, 255 - fade);
+    }
+
+    #[inline]
     pub fn luma(&self) -> u8 {
         let mut luma: u8 = 0;
         luma += scale8(self.r, 54);
@@ -168,6 +186,12 @@ impl ColorRGB {
         let maxi: u8 = self.r.max(self.g.max(self.b));
         let b_factor: u16 = (maxi as u16 * 256) / maxi as u16;
         self.modify_all(|c| ((b_factor * c as u16) / 256) as u8);
+    }
+
+    /// Estimates the power consumption of a single pixel. Returns the number of MilliWatts
+    pub fn estimate_power<T>(&self) -> u32
+        where T: PowerEstimator {
+        T::estimate(*self)
     }
 }
 
