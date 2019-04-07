@@ -1,6 +1,6 @@
-//! Color gradient functions.
+//! Color gradient functions and impls.
 //!
-//! Create smooth transitions between any two colors for any number of steps.
+//! Create's smooth transitions between any two colors for any number of steps.
 
 #[cfg(feature="no-std")]
 use core::ops::DerefMut;
@@ -13,11 +13,7 @@ use crate::{HSV, ColorRGB};
 use crate::lerp::ThreePointLerp;
 use crate::color_util::GradientDirection;
 
-pub trait FillGradient {
-    fn fill_gradient(self, start: HSV, end: HSV, dir: GradientDirection);
-}
-
-impl<'a, T, H: 'a> FillGradient for T
+impl<'a, T, H: 'a> super::FillGradient for T
     where
         T: IntoIterator<Item=&'a mut H>,
         T::IntoIter : ExactSizeIterator,
@@ -29,11 +25,7 @@ impl<'a, T, H: 'a> FillGradient for T
     }
 }
 
-pub trait FillGradientFull {
-    fn fill_gradient_full(self, start: HSV, end: HSV, dir: GradientDirection);
-}
-
-impl<'a, T, H: 'a> FillGradientFull for T
+impl<'a, T, H: 'a> super::FillGradientFull for T
     where
         T: IntoIterator<Item=&'a mut H>,
         T::IntoIter : ExactSizeIterator + DoubleEndedIterator,
@@ -50,12 +42,7 @@ impl<'a, T, H: 'a> FillGradientFull for T
     }
 }
 
-
-pub trait FillGradientRGB {
-    fn fill_gradient_rgb(self, start: ColorRGB, end: ColorRGB);
-}
-
-impl<'a, T, H: 'a> FillGradientRGB for T
+impl<'a, T, H: 'a> super::FillGradientRGB for T
     where
         T: IntoIterator<Item=&'a mut H>,
         T::IntoIter : ExactSizeIterator,
@@ -67,11 +54,7 @@ impl<'a, T, H: 'a> FillGradientRGB for T
     }
 }
 
-pub trait FillGradientRGBFull {
-    fn fill_gradient_rgb_full(self, start: ColorRGB, end: ColorRGB);
-}
-
-impl<'a, T, H: 'a> FillGradientRGBFull for T
+impl<'a, T, H: 'a> super::FillGradientRGBFull for T
     where
         T: IntoIterator<Item=&'a mut H>,
         T::IntoIter : ExactSizeIterator + DoubleEndedIterator,
@@ -151,6 +134,7 @@ pub fn rgb_gradient<'a, C: 'a + From<ColorRGB>, I: IntoIterator<Item=&'a mut C>>
 #[cfg(test)]
 mod test {
     use super::*;
+    use crate::color_util::*;
     use crate::{HSV};
 
      #[test]

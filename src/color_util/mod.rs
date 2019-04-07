@@ -1,6 +1,39 @@
 pub mod gradient;
 pub mod rainbow;
 
+use crate::{HSV, ColorRGB};
+
+pub trait FillGradient {
+    fn fill_gradient(self, start: HSV, end: HSV, dir: GradientDirection);
+}
+
+pub trait FillGradientFull {
+    fn fill_gradient_full(self, start: HSV, end: HSV, dir: GradientDirection);
+}
+
+
+pub trait FillGradientRGB {
+    fn fill_gradient_rgb(self, start: ColorRGB, end: ColorRGB);
+}
+
+pub trait FillGradientRGBFull {
+    fn fill_gradient_rgb_full(self, start: ColorRGB, end: ColorRGB);
+}
+
+
+pub trait FillRainbow<C> : Sized {
+    #[inline(always)]
+    fn fill_rainbow(self, start_hue: u8, hue_delta: C) {
+        self.fill_rainbow_with_sat_val(start_hue, hue_delta, 255, 255);
+    }
+
+    fn fill_rainbow_with_sat_val(self, start_hue: u8, hue_delta: C, sat: u8, val: u8);
+}
+
+pub trait FillSingularRainbow {
+    fn fill_singular_rainbow(self, start_hue: u8);
+}
+
 /// Possible Directions around the color wheel a hue can go.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
 #[repr(u8)]
@@ -71,7 +104,6 @@ impl GradientDirection {
         }
     }
 }
-
 
 impl From<HueDirection> for GradientDirection {
     fn from(dir: HueDirection) -> GradientDirection {

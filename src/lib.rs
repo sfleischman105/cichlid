@@ -54,8 +54,13 @@ mod lerp;
 pub use crate::rgb::ColorRGB;
 pub use crate::hsv::HSV;
 pub use crate::color_util::{GradientDirection};
-pub use crate::color_util::gradient::{FillGradient, FillGradientRGB, FillGradientFull, FillGradientRGBFull};
+pub use crate::prelude::*;
 pub use crate::power_mgmt::{DefaultPowerEstimator,PowerEstimator};
+
+pub mod prelude {
+    pub use crate::color_util::{FillGradient, FillGradientRGB,
+                                FillGradientFull, FillGradientRGBFull};
+}
 
 fn blur(arr: &mut [ColorRGB], amount: u8) {
     unimplemented!()
