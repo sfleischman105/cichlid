@@ -1,3 +1,5 @@
+//! Contains the HSV (hue, saturation, value) representation of a color.
+
 #[cfg(feature="no-std")]
 use core::mem::transmute;
 #[cfg(not(feature="no-std"))]
@@ -8,12 +10,17 @@ use core::hint::unreachable_unchecked;
 #[cfg(not(feature="no-std"))]
 use std::hint::unreachable_unchecked;
 
+#[cfg(feature="no-std")]
+use core::fmt;
+#[cfg(not(feature="no-std"))]
+use std::fmt;
+
 use crate::ColorRGB;
 use crate::scale::*;
 
 const HSV_SECTION_3: u8 = 0x40;
 
-/// Converts hue to value at full brightness
+/// Converts hue to RGB at full brightness and full saturation.
 #[inline]
 pub fn hue_to_full_rgb(hue: u8) -> ColorRGB {
     let offset: u8 = hue & 0x1F;
@@ -42,7 +49,8 @@ pub fn hue_to_full_rgb(hue: u8) -> ColorRGB {
     rgb
 }
 
-#[derive(Copy, Clone, Default, Eq, PartialEq)]
+/// Represents a color encoded in {hue, saturation, value} format.
+#[derive(Copy, Clone, Default, Eq, PartialEq, Debug)]
 pub struct HSV {
     pub h: u8,
     pub s: u8,
@@ -50,66 +58,85 @@ pub struct HSV {
 }
 
 impl HSV {
+    /// Grabs the hue component of the `HSV`.
     #[inline(always)]
     pub fn h(&self) -> u8 {
         self.h
     }
+    /// Grabs the saturation component of the `HSV`.
     #[inline(always)]
     pub fn s(&self) -> u8 {
         self.s
     }
+    /// Grabs the value component of the `HSV`.
     #[inline(always)]
     pub fn v(&self) -> u8 {
         self.v
     }
+    /// Grabs the hue component of the `HSV`.
     #[inline(always)]
     pub fn hue(&self) -> u8 {
         self.h()
     }
+    /// Grabs the saturation component of the `HSV`.
     #[inline(always)]
     pub fn saturation(&self) -> u8 {
         self.s()
     }
+    /// Grabs the value component of the `HSV`.
     #[inline(always)]
     pub fn value(&self) -> u8 {
         self.v()
     }
+    /// Sets the hue component of the `HSV`.
     #[inline(always)]
     pub fn set_hue(&mut self, h: u8) {
         self.h = h;
     }
+    /// Sets the saturation component of the `HSV`.
     #[inline(always)]
     pub fn set_saturation(&mut self, s: u8) {
         self.s = s;
     }
+    /// Sets the value component of the `HSV`.
     #[inline(always)]
     pub fn set_value(&mut self, v: u8) {
         self.v = v;
     }
 }
 
+impl fmt::Display for HSV {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "({}, {}, {})", self.h, self.s, self.v)
+    }
+}
+
 impl From<(u8, u8, u8)> for HSV {
-    #[inline]
+    #[inline(always)]
     fn from(other: (u8, u8, u8)) -> Self {
-        unsafe { transmute(other) }
+        Self::new(other.0, other.1, other.2)
     }
 }
 
 impl From<[u8; 3]> for HSV {
-    #[inline]
+    #[inline(always)]
     fn from(other: [u8; 3]) -> Self {
-        unsafe { transmute(other) }
+        Self::new(other[0], other[1], other[2])
     }
 }
 
 impl HSV {
-    #[inline]
-    pub fn new(h: u8, s: u8, v: u8) -> Self {
-        Self::from((h, s, v))
+    /// Blank `HSV` object where all values are initialized to zero.
+    pub const BLANK: HSV = HSV {h: 0, s: 0, v: 0};
+
+    /// Create a new `HSV` object.
+    #[inline(always)]
+    pub const fn new(h: u8, s: u8, v: u8) -> Self {
+        HSV { h, s, v }
     }
 
-    // Full rainbow
-    pub fn to_rgb_rainbow(&self) -> ColorRGB {
+    /// Converts hue, saturation, and value to a `ColorRGB` using a visually balanced rainbow.
+    pub fn to_rgb_rainbow(self) -> ColorRGB {
         let hue: u8 = self.h;
         let sat: u8 = self.s;
         let val: u8 = self.v;
@@ -120,7 +147,7 @@ impl HSV {
             return ColorRGB::new(0, 0, 0);
         }
 
-        let mut rgb = hue_to_full_rgb(hue);
+        let mut rgb: ColorRGB = hue_to_full_rgb(hue);
 
         if sat != 255 {
             // Already checked for sat == 0;
@@ -139,7 +166,7 @@ impl HSV {
     }
 
     // Mathematical rainbow
-    pub fn to_rgb_spectrum(&self) -> ColorRGB {
+    fn to_rgb_spectrum(self) -> ColorRGB {
         let mut hsv = self.clone();
         hsv.h = scale8(hsv.h, 191);
         unsafe { hsv.to_rgb_raw() }
@@ -147,7 +174,7 @@ impl HSV {
 
     // TODO: Test this!
     // Value can only be up to 191
-    pub unsafe fn to_rgb_raw(&self) -> ColorRGB {
+    unsafe fn to_rgb_raw(self) -> ColorRGB {
         let value: u8 = self.v;
         let saturation: u8 = self.s;
         // The brightness floor is minimum number that all of
@@ -197,6 +224,7 @@ impl HSV {
         }
     }
 
+    /// Changes the brightness (the value component in HSV) to it's maximum, 255.
     pub fn maximize_brightness(&mut self) {
         self.v = 255;
     }

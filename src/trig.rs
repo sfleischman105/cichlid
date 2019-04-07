@@ -1,8 +1,13 @@
+//! Collection of math functions for fast trigonometry.
+//!
+//! Credit for most of these functions goes to the authors of the FastLED library.
+
 #[cfg(feature="no-std")]
 use core::mem::transmute;
 #[cfg(not(feature="no-std"))]
 use std::mem::transmute;
 
+/// Returns the sine of a two byte integer.
 pub fn sin16(theta: u16) -> i16 {
     static BASE: [u16; 8] = [0, 6393, 12539, 18204, 23170, 27245, 30273, 32137 ];
     static SLOPE: [u8; 8] = [ 49, 48, 44, 38, 31, 23, 14, 4 ];
@@ -24,10 +29,12 @@ pub fn sin16(theta: u16) -> i16 {
     y
 }
 
+/// Returns the cosine of a two byte integer.
 pub fn cos16(theta: u16) -> i16 {
-    sin16( theta + 16384)
+    sin16( theta.wrapping_add(16384))
 }
 
+/// Returns the sine of a single byte integer.
 pub fn sin8(theta: u8) -> u8 {
     static B_M16_INTERLEAVE: [u8; 8] = [0, 49, 49, 41, 90, 27, 117, 10 ];
 
@@ -59,6 +66,7 @@ pub fn sin8(theta: u8) -> u8 {
     sin.wrapping_add(128)
 }
 
+/// Returns the cosine of a single byte integer.
 pub fn cos8(theta: u8) -> u8 {
-    sin8(theta + 64)
+    sin8(theta.wrapping_add(64))
 }

@@ -1,6 +1,6 @@
 //! Collection of math functions for scaling, dimming, and brightening numbers.
 //!
-//! Taken directly from the FastLED library.
+//! Credit for most of these functions goes to the authoers of the FastLED library.
 
 /// Scales one byte (`i`) by a second one (`scale`), which is treated as the numerator
 /// of a fraction whose denominator is `256`.
@@ -125,8 +125,4 @@ pub const fn scale16(i: u16, scale: u16) -> u16 {
 #[inline(always)]
 pub const fn scale16by8(i: u16, scale: u8) -> u16 {
     ((i as u32 * (1u32 + scale as u32)) >> 8) as u16
-}
-
-pub trait Turtle {
-    const N: u8;
 }

@@ -1,3 +1,5 @@
+//! Raw Color codes.
+
 #![allow(non_upper_case_globals)]
 pub const AliceBlue: u32 = 0xF0F8FF;
 pub const Amethyst: u32 = 0x9966CC;

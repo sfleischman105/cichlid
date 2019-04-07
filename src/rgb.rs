@@ -1,3 +1,4 @@
+//! Contains the structure and associated methods for a RGB Object.
 #[cfg(feature="no-std")]
 use core::mem::transmute;
 #[cfg(not(feature="no-std"))]
@@ -23,30 +24,31 @@ use crate::scale::*;
 use crate::HSV;
 use crate::power_mgmt::{PowerEstimator};
 
-pub trait RGBOrder {
-    const FIRST: usize;
-    const SECOND: usize;
-    const THIRD: usize;
-}
+//pub trait RGBOrder {
+//    const FIRST: usize;
+//    const SECOND: usize;
+//    const THIRD: usize;
+//}
+//
+//macro_rules! impl_order {
+//    ($t:tt, $o1:expr, $o2:expr, $o3:expr) => {
+//        pub struct $t;
+//        impl RGBOrder for $t {
+//            const FIRST: usize = $o1;
+//            const SECOND: usize = $o2;
+//            const THIRD: usize = $o3;
+//        }
+//    };
+//}
+//
+//impl_order!(OrderingRGB, 0, 1, 2);
+//impl_order!(OrderingRBG, 0, 2, 1);
+//impl_order!(OrderingGRB, 1, 0, 2);
+//impl_order!(OrderingBRG, 1, 2, 0);
+//impl_order!(OrderingGBR, 2, 0, 1);
+//impl_order!(OrderingBGR, 2, 1, 2);
 
-macro_rules! impl_order {
-    ($t:tt, $o1:expr, $o2:expr, $o3:expr) => {
-        pub struct $t;
-        impl RGBOrder for $t {
-            const FIRST: usize = $o1;
-            const SECOND: usize = $o2;
-            const THIRD: usize = $o3;
-        }
-    };
-}
-
-impl_order!(OrderingRGB, 0, 1, 2);
-impl_order!(OrderingRBG, 0, 2, 1);
-impl_order!(OrderingGRB, 1, 0, 2);
-impl_order!(OrderingBRG, 1, 2, 0);
-impl_order!(OrderingGBR, 2, 0, 1);
-impl_order!(OrderingBGR, 2, 1, 2);
-
+/// Object representing a color through the standard single byte red, green, and blue values.
 #[repr(packed)]
 #[derive(Copy, Clone, Default, PartialEq, Eq)]
 pub struct ColorRGB {
@@ -56,11 +58,16 @@ pub struct ColorRGB {
 }
 
 impl ColorRGB {
+    /// Creates a new `ColorRGB` object.
     #[inline(always)]
     pub const fn new(r: u8, g: u8, b: u8) -> Self {
         ColorRGB { r, g, b }
     }
 
+    /// Creates a `ColorRGB` object from a 32bit color code.
+    ///
+    /// Bits 0 to 7 are used for the blue component, Bits 8 to 16 are used for the green component,
+    /// and bits 16 to 23 are used for the red component.
     #[inline(always)]
     pub const fn from_color_code(code: u32) -> Self {
         ColorRGB {
@@ -70,48 +77,61 @@ impl ColorRGB {
         }
     }
 
+    /// Sets all components to zero.
     pub fn clear(&mut self) {
         self.modify_all(|_| 0);
     }
 
+    /// Returns the value of the red component.
     #[inline(always)]
-    pub fn r(&self) -> u8 {
+    pub fn r(self) -> u8 {
         self.r
     }
+    /// Returns the value of the green component.
     #[inline(always)]
-    pub fn g(&self) -> u8 {
+    pub fn g(self) -> u8 {
         self.g
     }
+    /// Returns the value of the blue component.
     #[inline(always)]
-    pub fn b(&self) -> u8 {
+    pub fn b(self) -> u8 {
         self.b
     }
+    /// Returns the value of the red component.
     #[inline(always)]
-    pub fn red(&self) -> u8 {
+    pub fn red(self) -> u8 {
         self.r
     }
+    /// Returns the value of the green component.
     #[inline(always)]
-    pub fn green(&self) -> u8 {
+    pub fn green(self) -> u8 {
         self.g
     }
+    /// Returns the value of the blue component.
     #[inline(always)]
-    pub fn blue(&self) -> u8 {
+    pub fn blue(self) -> u8 {
         self.b
     }
 
+    /// Sets the red component.
     #[inline(always)]
     pub fn set_red(&mut self, r: u8) {
         self.r = r;
     }
+
+    /// Sets the green component.
     #[inline(always)]
     pub fn set_green(&mut self, g: u8) {
         self.g = g;
     }
+
+    /// Sets the blue component.
     #[inline(always)]
     pub fn set_blue(&mut self, b: u8) {
         self.b = b;
     }
 
+    /// Modifies the red component by a given function.
     #[inline]
     pub fn modify_red<F>(&mut self, mut f: F)
         where
@@ -120,6 +140,7 @@ impl ColorRGB {
         self.r = f(self.r);
     }
 
+    /// Modifies the green component by a given function.
     #[inline]
     pub fn modify_green<F>(&mut self, mut f: F)
         where
@@ -128,6 +149,7 @@ impl ColorRGB {
         self.g = f(self.g);
     }
 
+    /// Modifies the blue component by a given function.
     #[inline]
     pub fn modify_blue<F>(&mut self, mut f: F)
         where
@@ -136,6 +158,7 @@ impl ColorRGB {
         self.b = f(self.b);
     }
 
+    /// Function to modify each component by a given function.
     #[inline]
     pub fn modify_all<F>(&mut self, mut f: F)
         where
@@ -146,11 +169,13 @@ impl ColorRGB {
         self.b = f(self.b);
     }
 
+    /// Scales all three components of a pixel by the given value.
     #[inline]
     pub fn scale(&mut self, scale: u8) {
         nscale8x3(&mut self.r, &mut self.g, &mut self.b, scale);
     }
 
+    /// Scales the current `ColorRGB` by another pixel.
     #[inline]
     pub fn scale_from_other(&mut self, other: &ColorRGB) {
         nscale8(&mut self.r, other.r);
@@ -158,29 +183,13 @@ impl ColorRGB {
         nscale8(&mut self.b, other.b);
     }
 
+    /// Fades to black by the given amount.
     #[inline]
     pub fn fade_to_black_by(&mut self, fade: u8) {
         nscale8x3(&mut self.r, &mut self.g, &mut self.b, 255 - fade);
     }
 
-    #[inline]
-    pub fn luma(&self) -> u8 {
-        let mut luma: u8 = 0;
-        luma += scale8(self.r, 54);
-        luma += scale8(self.g, 183);
-        luma += scale8(self.b, 18);
-        luma
-    }
-
-    #[inline]
-    pub fn avg_light(&self) -> u8 {
-        let mut luma: u8 = 0;
-        luma += scale8(self.r, 85);
-        luma += scale8(self.g, 85);
-        luma += scale8(self.b, 85);
-        luma
-    }
-
+    /// Maintains the ratio of red, green, and blue while maximizing brightness.
     #[inline]
     pub fn maximize_brightness(&mut self) {
         let maxi: u8 = self.r.max(self.g.max(self.b));
@@ -188,7 +197,28 @@ impl ColorRGB {
         self.modify_all(|c| ((b_factor * c as u16) / 256) as u8);
     }
 
-    /// Estimates the power consumption of a single pixel. Returns the number of MilliWatts
+    /// Returns the luminosity of a pixel.
+    #[inline]
+    pub fn luma(self) -> u8 {
+        let mut luma: u8 = 0;
+        luma += scale8(self.r, 54);
+        luma += scale8(self.g, 183);
+        luma += scale8(self.b, 18);
+        luma
+    }
+
+    /// Returns the average value over each component of a pixel.
+    #[inline]
+    pub fn avg_light(self) -> u8 {
+        let mut luma: u8 = 0;
+        luma += scale8(self.r, 85);
+        luma += scale8(self.g, 85);
+        luma += scale8(self.b, 85);
+        luma
+    }
+
+    /// Estimates the power consumption of a single pixel. Returns the number of MilliWatts used
+    /// to power this single pixel at it's current red, green, and blue component values.
     pub fn estimate_power<T>(&self) -> u32
         where T: PowerEstimator {
         T::estimate(*self)
