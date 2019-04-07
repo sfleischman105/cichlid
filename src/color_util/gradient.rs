@@ -3,11 +3,6 @@
 //! Create smooth transitions between any two colors for any number of steps.
 
 #[cfg(feature="no-std")]
-use core::mem::transmute;
-#[cfg(not(feature="no-std"))]
-use std::mem::transmute;
-
-#[cfg(feature="no-std")]
 use core::ops::DerefMut;
 #[cfg(not(feature="no-std"))]
 use std::ops::DerefMut;
@@ -15,7 +10,7 @@ use std::ops::DerefMut;
 use crate::{HSV, ColorRGB};
 use crate::lerp::ThreePointLerp;
 
-trait FillGradient<AXEL, OUTPUT>
+pub trait FillGradient<AXEL, OUTPUT>
     where
         AXEL: Copy,
         OUTPUT: From<AXEL>,
@@ -50,23 +45,17 @@ trait FillGradient<AXEL, OUTPUT>
     }
 }
 
-//impl<O: From<HSV>> FillGradient<HSV, O> for &mut [O] {
-//    fn fill_gradient_slice(arr: &mut [O], start: HSV, end: HSV, dir: GradientDirection) {
-//        hsv_gradient::<O>(start, end, dir, arr);
-//    }
-//}
-
-impl<'a, O: From<HSV>, T: DerefMut<Target=[O]>> FillGradient<HSV, O> for  T {
+impl<'a, O: From<HSV>, T: DerefMut<Target=[O]>> FillGradient<HSV, O> for T {
     fn fill_gradient_slice(arr: &mut [O], start: HSV, end: HSV, dir: GradientDirection) {
         hsv_gradient::<O>(start, end, dir, arr);
     }
 }
 
-//impl<O: From<ColorRGB>> FillGradient<ColorRGB, O> for &mut [O] {
-//    fn fill_gradient_slice(arr: &mut [O], start: ColorRGB, end: ColorRGB, dir: GradientDirection) {
-////        hsv_gradient::<O>(start, end, dir, arr);
-//    }
-//}
+impl<'a, O: From<ColorRGB>, T: DerefMut<Target=[O]>> FillGradient<ColorRGB, O> for T {
+    fn fill_gradient_slice(arr: &mut [O], start: ColorRGB, end: ColorRGB, _: GradientDirection) {
+        rgb_gradient::<O>(start, end, arr);
+    }
+}
 
 
 /// Possible Directions around the color wheel a gradient can go.
@@ -164,7 +153,7 @@ pub fn hsv_gradient<C: From<HSV>>(start: HSV, end: HSV, dir: GradientDirection, 
 
     let hue_distance: i16 = dir.into_hue_distance(start.h, end.h);
 
-    let mut lerp: ThreePointLerp = ThreePointLerp::new()
+    let lerp: ThreePointLerp = ThreePointLerp::new()
         .set_lerp_from_distance(0, start.h, hue_distance)
         .set_lerp_from_diff(1, start.s, end.s)
         .set_lerp_from_diff(2, start.v, end.v)
@@ -177,7 +166,7 @@ pub fn hsv_gradient<C: From<HSV>>(start: HSV, end: HSV, dir: GradientDirection, 
 }
 
 
-pub fn rgb_gradient<C: From<ColorRGB>>(start: ColorRGB, end: ColorRGB, dir: GradientDirection, output: &mut [C]) {
+pub fn rgb_gradient<C: From<ColorRGB>>(start: ColorRGB, end: ColorRGB, output: &mut [C]) {
     let len = output.len();
     match len {
         0 => return,
@@ -188,7 +177,7 @@ pub fn rgb_gradient<C: From<ColorRGB>>(start: ColorRGB, end: ColorRGB, dir: Grad
         _ => {}
     }
 
-    let mut lerp: ThreePointLerp = ThreePointLerp::new()
+    let lerp: ThreePointLerp = ThreePointLerp::new()
         .set_lerp_from_diff(0, start.r, end.r)
         .set_lerp_from_diff(1, start.g, end.g)
         .set_lerp_from_diff(2, start.b, end.b)
@@ -215,10 +204,8 @@ mod test {
 
         let dir = GradientDirection::Shortest;
         out.as_mut().fill_gradient(start, end, dir);
-//        hsv_gradient(start, end, dir, &mut out);
         assert_eq!(*out.last().unwrap(), HSV::new(80, 180, 90));
         out.as_mut().fill_gradient_full(start, end, dir);
-//        hsv_gradient_inclusive_end(start, end, dir, &mut out);
         assert_eq!(*out.last().unwrap(), end);
 
         let dir = GradientDirection::Forward;

@@ -47,7 +47,7 @@ pub mod scale;
 pub mod trig;
 pub mod rgb;
 pub mod hsv;
-pub mod gradient;
+pub mod color_util;
 pub mod power_mgmt;
 mod lerp;
 

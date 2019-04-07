@@ -18,7 +18,7 @@ impl ThreePointLerp {
     }
 
     #[inline(always)]
-    pub fn set_lerp_from_diff(mut self, num: usize, start: u8, end: u8) -> Self {
+    pub fn set_lerp_from_diff(self, num: usize, start: u8, end: u8) -> Self {
         let distance: i16 = ((end as i16).wrapping_sub(start as i16)).wrapping_shl(7);
         self.set_lerp_from_distance(num, start, distance)
     }
