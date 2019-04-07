@@ -10,6 +10,11 @@ use core::cmp::{Ord, Ordering, PartialOrd};
 use std::cmp::{Ord, Ordering, PartialOrd};
 
 #[cfg(feature="no-std")]
+use core::fmt;
+#[cfg(not(feature="no-std"))]
+use std::fmt;
+
+#[cfg(feature="no-std")]
 use core::ops::{
     Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, Div, DivAssign, Index, IndexMut, Mul,
     MulAssign, Neg, Not, Rem, ShrAssign, Sub, SubAssign,
@@ -50,7 +55,7 @@ use crate::power_mgmt::{PowerEstimator};
 
 /// Object representing a color through the standard single byte red, green, and blue values.
 #[repr(packed)]
-#[derive(Copy, Clone, Default, PartialEq, Eq)]
+#[derive(Copy, Clone, Default, PartialEq, Eq, Debug)]
 pub struct ColorRGB {
     pub r: u8,
     pub b: u8,
@@ -225,6 +230,263 @@ impl ColorRGB {
     }
 }
 
+impl fmt::Display for ColorRGB {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "(r: {}, g: {}, b: {})", self.r, self.g, self.b)
+    }
+}
+
+impl From<(u8, u8, u8)> for ColorRGB {
+    #[inline(always)]
+    fn from(other: (u8, u8, u8)) -> Self {
+        Self::new(other.0, other.1, other.2)
+    }
+}
+
+impl From<[u8; 3]> for ColorRGB {
+    #[inline(always)]
+    fn from(other: [u8; 3]) -> Self {
+        Self::new(other[0], other[1], other[2])
+    }
+}
+
+impl From<u32> for ColorRGB {
+    #[inline(always)]
+    fn from(other: u32) -> Self {
+        Self::from_color_code(other)
+    }
+}
+
+impl From<HSV> for ColorRGB {
+    fn from(hsv: HSV) -> Self {
+        hsv.to_rgb_rainbow()
+    }
+}
+
+impl Index<usize> for ColorRGB {
+    type Output = u8;
+    #[inline(always)]
+    fn index(&self, idx: usize) -> &u8 {
+        unsafe {
+            let arr: &[u8; 3] = transmute(self);
+            &arr[idx]
+        }
+    }
+}
+
+impl IndexMut<usize> for ColorRGB {
+    #[inline(always)]
+    fn index_mut(&mut self, idx: usize) -> &mut u8 {
+        unsafe {
+            let arr: &mut [u8; 3] = transmute(self);
+            &mut arr[idx]
+        }
+    }
+}
+
+impl AddAssign for ColorRGB {
+    #[inline(always)]
+    fn add_assign(&mut self, rhs: ColorRGB) {
+        *self = ColorRGB {
+            r: self.r.saturating_add(rhs.r),
+            g: self.g.saturating_add(rhs.g),
+            b: self.b.saturating_add(rhs.b),
+        };
+    }
+}
+
+// Add a constant to each channel
+impl AddAssign<u8> for ColorRGB {
+    #[inline(always)]
+    fn add_assign(&mut self, rhs: u8) {
+        self.modify_all(|c| c.saturating_add(rhs))
+    }
+}
+
+impl SubAssign for ColorRGB {
+    #[inline(always)]
+    fn sub_assign(&mut self, rhs: ColorRGB) {
+        *self = ColorRGB {
+            r: self.r.saturating_sub(rhs.r),
+            g: self.g.saturating_sub(rhs.g),
+            b: self.b.saturating_sub(rhs.b),
+        };
+    }
+}
+
+impl SubAssign<u8> for ColorRGB {
+    #[inline(always)]
+    fn sub_assign(&mut self, rhs: u8) {
+        self.modify_all(|c| c.saturating_sub(rhs))
+    }
+}
+
+impl DivAssign<u8> for ColorRGB {
+    #[inline(always)]
+    fn div_assign(&mut self, rhs: u8) {
+        self.modify_all(|c| c / rhs)
+    }
+}
+
+impl MulAssign<u8> for ColorRGB {
+    #[inline(always)]
+    fn mul_assign(&mut self, rhs: u8) {
+        self.modify_all(|c| c.saturating_mul(rhs))
+    }
+}
+
+impl ShrAssign<u8> for ColorRGB {
+    #[inline(always)]
+    fn shr_assign(&mut self, rhs: u8) {
+        self.modify_all(|c| c >> rhs)
+    }
+}
+
+impl BitOrAssign for ColorRGB {
+    #[inline(always)]
+    fn bitor_assign(&mut self, rhs: ColorRGB) {
+        *self = ColorRGB {
+            r: self.r.max(rhs.r),
+            g: self.g.max(rhs.g),
+            b: self.b.max(rhs.b),
+        };
+    }
+}
+
+impl BitOrAssign<u8> for ColorRGB {
+    #[inline(always)]
+    fn bitor_assign(&mut self, rhs: u8) {
+        self.modify_all(|c| c.max(rhs))
+    }
+}
+
+impl BitAndAssign for ColorRGB {
+    #[inline(always)]
+    fn bitand_assign(&mut self, rhs: ColorRGB) {
+        *self = ColorRGB {
+            r: self.r.min(rhs.r),
+            g: self.g.min(rhs.g),
+            b: self.b.min(rhs.b),
+        };
+    }
+}
+
+impl BitAndAssign<u8> for ColorRGB {
+    #[inline(always)]
+    fn bitand_assign(&mut self, rhs: u8) {
+        self.modify_all(|c| c.min(rhs))
+    }
+}
+
+impl Neg for ColorRGB {
+    type Output = ColorRGB;
+
+    #[inline(always)]
+    fn neg(self) -> ColorRGB {
+        let mut cln: ColorRGB = self;
+        cln.modify_all(|c| 255 - c);
+        cln
+    }
+}
+
+impl Not for ColorRGB {
+    type Output = bool;
+    #[inline(always)]
+    fn not(self) -> bool {
+        self.r != 0 || self.g != 0 || self.b != 0
+    }
+}
+
+impl PartialOrd for ColorRGB {
+    #[inline]
+    fn partial_cmp(&self, other: &ColorRGB) -> Option<Ordering> {
+        Some(self.cmp(other))
+    }
+}
+
+impl Ord for ColorRGB {
+    #[inline]
+    fn cmp(&self, rhs: &ColorRGB) -> Ordering {
+        let rhs_t: u16 = rhs.r as u16 + rhs.b as u16 + rhs.g as u16;
+        let lhs_t: u16 = self.r as u16 + self.b as u16 + self.g as u16;
+        lhs_t.cmp(&rhs_t)
+    }
+}
+
+impl Add for ColorRGB {
+    type Output = ColorRGB;
+    #[inline(always)]
+    fn add(self, other: ColorRGB) -> ColorRGB {
+        let mut cln: ColorRGB = self;
+        cln += other;
+        cln
+    }
+}
+
+impl Sub for ColorRGB {
+    type Output = ColorRGB;
+    #[inline(always)]
+    fn sub(self, other: ColorRGB) -> ColorRGB {
+        let mut cln: ColorRGB = self;
+        cln -= other;
+        cln
+    }
+}
+
+impl Mul<u8> for ColorRGB {
+    type Output = ColorRGB;
+    #[inline(always)]
+    fn mul(self, rhs: u8) -> ColorRGB {
+        let mut cln: ColorRGB = self;
+        cln *= rhs;
+        cln
+    }
+}
+
+impl Div<u8> for ColorRGB {
+    type Output = ColorRGB;
+    #[inline(always)]
+    fn div(self, rhs: u8) -> ColorRGB {
+        let mut cln: ColorRGB = self;
+        cln /= rhs;
+        cln
+    }
+}
+
+impl BitAnd for ColorRGB {
+    type Output = ColorRGB;
+    #[inline(always)]
+    fn bitand(self, other: ColorRGB) -> ColorRGB {
+        let mut cln: ColorRGB = self;
+        cln &= other;
+        cln
+    }
+}
+
+impl BitOr for ColorRGB {
+    type Output = ColorRGB;
+    #[inline(always)]
+    fn bitor(self, other: ColorRGB) -> ColorRGB {
+        let mut cln: ColorRGB = self;
+        cln |= other;
+        cln
+    }
+}
+
+impl Rem<u8> for ColorRGB {
+    type Output = ColorRGB;
+    #[inline(always)]
+    fn rem(self, rhs: u8) -> ColorRGB {
+        ColorRGB {
+            r: self.r % rhs,
+            g: self.g % rhs,
+            b: self.b % rhs,
+        }
+    }
+}
+
+// Color codes
+
 #[allow(non_upper_case_globals)]
 impl ColorRGB {
     pub const AliceBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::AliceBlue);
@@ -378,246 +640,4 @@ impl ColorRGB {
     pub const WhiteSmoke: ColorRGB = ColorRGB::from_color_code(crate::color_codes::WhiteSmoke);
     pub const Yellow: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Yellow);
     pub const YellowGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::YellowGreen);
-}
-
-impl From<(u8, u8, u8)> for ColorRGB {
-    #[inline(always)]
-    fn from(other: (u8, u8, u8)) -> Self {
-        unsafe { transmute(other) }
-    }
-}
-
-impl From<[u8; 3]> for ColorRGB {
-    #[inline(always)]
-    fn from(other: [u8; 3]) -> Self {
-        unsafe { transmute(other) }
-    }
-}
-
-impl From<HSV> for ColorRGB {
-    fn from(hsv: HSV) -> Self {
-        hsv.to_rgb_rainbow()
-    }
-}
-
-impl Index<usize> for ColorRGB {
-    type Output = u8;
-    #[inline(always)]
-    fn index(&self, idx: usize) -> &u8 {
-        unsafe {
-            let arr: &[u8; 3] = transmute(self);
-            &arr[idx]
-        }
-    }
-}
-
-impl IndexMut<usize> for ColorRGB {
-    #[inline(always)]
-    fn index_mut(&mut self, idx: usize) -> &mut u8 {
-        unsafe {
-            let arr: &mut [u8; 3] = transmute(self);
-            &mut arr[idx]
-        }
-    }
-}
-
-impl AddAssign for ColorRGB {
-    #[inline(always)]
-    fn add_assign(&mut self, rhs: ColorRGB) {
-        *self = ColorRGB {
-            r: self.r.saturating_add(rhs.r),
-            g: self.g.saturating_add(rhs.g),
-            b: self.b.saturating_add(rhs.b),
-        };
-    }
-}
-
-// Add a constant to each channel
-impl AddAssign<u8> for ColorRGB {
-    #[inline(always)]
-    fn add_assign(&mut self, rhs: u8) {
-        self.modify_all(|c| c.saturating_add(rhs))
-    }
-}
-
-impl SubAssign for ColorRGB {
-    #[inline(always)]
-    fn sub_assign(&mut self, rhs: ColorRGB) {
-        *self = ColorRGB {
-            r: self.r.saturating_sub(rhs.r),
-            g: self.g.saturating_sub(rhs.g),
-            b: self.b.saturating_sub(rhs.b),
-        };
-    }
-}
-
-impl SubAssign<u8> for ColorRGB {
-    #[inline(always)]
-    fn sub_assign(&mut self, rhs: u8) {
-        self.modify_all(|c| c.saturating_sub(rhs))
-    }
-}
-
-impl DivAssign<u8> for ColorRGB {
-    #[inline(always)]
-    fn div_assign(&mut self, rhs: u8) {
-        self.modify_all(|c| c / rhs)
-    }
-}
-
-impl MulAssign<u8> for ColorRGB {
-    #[inline(always)]
-    fn mul_assign(&mut self, rhs: u8) {
-        self.modify_all(|c| c.saturating_mul(rhs))
-    }
-}
-
-impl ShrAssign<u8> for ColorRGB {
-    #[inline(always)]
-    fn shr_assign(&mut self, rhs: u8) {
-        self.modify_all(|c| c >> rhs)
-    }
-}
-
-impl BitOrAssign for ColorRGB {
-    #[inline(always)]
-    fn bitor_assign(&mut self, rhs: ColorRGB) {
-        *self = ColorRGB {
-            r: self.r.max(rhs.r),
-            g: self.g.max(rhs.g),
-            b: self.b.max(rhs.b),
-        };
-    }
-}
-
-impl BitOrAssign<u8> for ColorRGB {
-    #[inline(always)]
-    fn bitor_assign(&mut self, rhs: u8) {
-        self.modify_all(|c| c.max(rhs))
-    }
-}
-
-impl BitAndAssign for ColorRGB {
-    #[inline(always)]
-    fn bitand_assign(&mut self, rhs: ColorRGB) {
-        *self = ColorRGB {
-            r: self.r.min(rhs.r),
-            g: self.g.min(rhs.g),
-            b: self.b.min(rhs.b),
-        };
-    }
-}
-
-impl BitAndAssign<u8> for ColorRGB {
-    #[inline(always)]
-    fn bitand_assign(&mut self, rhs: u8) {
-        self.modify_all(|c| c.min(rhs))
-    }
-}
-
-impl Neg for ColorRGB {
-    type Output = ColorRGB;
-
-    #[inline(always)]
-    fn neg(self) -> ColorRGB {
-        let mut cln: ColorRGB = self.clone();
-        cln.modify_all(|c| 255 - c);
-        cln
-    }
-}
-
-impl Not for ColorRGB {
-    type Output = bool;
-    #[inline(always)]
-    fn not(self) -> bool {
-        self.r != 0 || self.g != 0 || self.b != 0
-    }
-}
-
-impl PartialOrd for ColorRGB {
-    #[inline]
-    fn partial_cmp(&self, other: &ColorRGB) -> Option<Ordering> {
-        Some(self.cmp(other))
-    }
-}
-
-impl Ord for ColorRGB {
-    #[inline]
-    fn cmp(&self, rhs: &ColorRGB) -> Ordering {
-        let rhs_t: u16 = rhs.r as u16 + rhs.b as u16 + rhs.g as u16;
-        let lhs_t: u16 = self.r as u16 + self.b as u16 + self.g as u16;
-        lhs_t.cmp(&rhs_t)
-    }
-}
-
-impl Add for ColorRGB {
-    type Output = ColorRGB;
-    #[inline(always)]
-    fn add(self, other: ColorRGB) -> ColorRGB {
-        let mut cln: ColorRGB = self.clone();
-        cln += other;
-        cln
-    }
-}
-
-impl Sub for ColorRGB {
-    type Output = ColorRGB;
-    #[inline(always)]
-    fn sub(self, other: ColorRGB) -> ColorRGB {
-        let mut cln: ColorRGB = self.clone();
-        cln -= other;
-        cln
-    }
-}
-
-impl Mul<u8> for ColorRGB {
-    type Output = ColorRGB;
-    #[inline(always)]
-    fn mul(self, rhs: u8) -> ColorRGB {
-        let mut cln: ColorRGB = self.clone();
-        cln *= rhs;
-        cln
-    }
-}
-
-impl Div<u8> for ColorRGB {
-    type Output = ColorRGB;
-    #[inline(always)]
-    fn div(self, rhs: u8) -> ColorRGB {
-        let mut cln: ColorRGB = self.clone();
-        cln /= rhs;
-        cln
-    }
-}
-
-impl BitAnd for ColorRGB {
-    type Output = ColorRGB;
-    #[inline(always)]
-    fn bitand(self, other: ColorRGB) -> ColorRGB {
-        let mut cln: ColorRGB = self.clone();
-        cln &= other;
-        cln
-    }
-}
-
-impl BitOr for ColorRGB {
-    type Output = ColorRGB;
-    #[inline(always)]
-    fn bitor(self, other: ColorRGB) -> ColorRGB {
-        let mut cln: ColorRGB = self.clone();
-        cln |= other;
-        cln
-    }
-}
-
-impl Rem<u8> for ColorRGB {
-    type Output = ColorRGB;
-    #[inline(always)]
-    fn rem(self, rhs: u8) -> ColorRGB {
-        ColorRGB {
-            r: self.r % rhs,
-            g: self.g % rhs,
-            b: self.b % rhs,
-        }
-    }
 }

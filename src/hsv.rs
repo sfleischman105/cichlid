@@ -167,7 +167,7 @@ impl HSV {
 
     // Mathematical rainbow
     fn to_rgb_spectrum(self) -> ColorRGB {
-        let mut hsv = self.clone();
+        let mut hsv = self;
         hsv.h = scale8(hsv.h, 191);
         unsafe { hsv.to_rgb_raw() }
     }

@@ -5,19 +5,22 @@ use crate::ColorRGB;
 
 /// Trait for estimating the power consumption of a strand of `ColorRGB`s.
 pub trait PowerEstimator {
-    /// The number of milliWatts used for the red component of an `ColorRGB`. This value is not
-    /// the milliWatts for full brightness red component, but rather the number of mW used
-    /// per singular increment (`color.red() == 1`).
+    /// The number of milliWatts used for the red component of an `ColorRGB`.
+    ///
+    /// This value is not the milliWatts for full brightness red component,
+    /// but rather the number of mW used per singular increment (`color.red() == 1`).
     #[allow(non_snake_case, non_upper_case_globals)]
     const R_mW: u32;
-    /// The number of milliWatts used for the green component of an `ColorRGB`. This value is not
-    /// the milliWatts for full brightness green component, but rather the number of mW used
-    /// per singular increment (`color.green() == 1`).
+    /// The number of milliWatts used for the green component of an `ColorRGB`.
+    ///
+    /// This value is not the milliWatts for full brightness green component,
+    /// but rather the number of mW used per singular increment (`color.green() == 1`).
     #[allow(non_snake_case, non_upper_case_globals)]
     const G_mW: u32;
-    /// The number of milliWatts used for the green blue of an `ColorRGB`. This value is not
-    /// the milliWatts for full brightness blue component, but rather the number of mW used
-    /// per singular increment (`color.blue() == 1`).
+    /// The number of milliWatts used for the green blue of an `ColorRGB`.
+    ///
+    /// This value is not the milliWatts for full brightness blue component,
+    /// but rather the number of mW used per singular increment (`color.blue() == 1`).
     #[allow(non_snake_case, non_upper_case_globals)]
     const B_mW: u32;
     /// The number of milliWatts per `ColorRGB` consumes constantly when powered.

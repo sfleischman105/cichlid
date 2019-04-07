@@ -7,7 +7,67 @@ use core::mem::transmute;
 #[cfg(not(feature="no-std"))]
 use std::mem::transmute;
 
-use crate::HSV;
+#[cfg(feature="no-std")]
+use core::ops::DerefMut;
+#[cfg(not(feature="no-std"))]
+use std::ops::DerefMut;
+
+use crate::{HSV, ColorRGB};
+use crate::lerp::ThreePointLerp;
+
+trait FillGradient<AXEL, OUTPUT>
+    where
+        AXEL: Copy,
+        OUTPUT: From<AXEL>,
+        Self: DerefMut<Target=[OUTPUT]>
+{
+
+    fn fill_gradient_slice(arr: &mut [OUTPUT], start: AXEL, end: AXEL, dir: GradientDirection);
+
+    /// Creates a axial (two-color) gradient from the HSV values `start` to (exclusive) `end`.
+    ///
+    /// This function will fill the array inclusive of the `start` HSV and exclusive of the `end` HSV.
+    /// This means that after completion, `output[output.len() - 1] will not be the end color, but
+    /// rather the interpolated color before `start`. If you need the `end` color to appear last, see
+    /// `hsv_gradient_inclusive_end`.
+    ///
+    /// # Edge Cases
+    ///
+    /// If `output` is empty, the operation returns immediately.
+    fn fill_gradient(&mut self, start: AXEL, end: AXEL, dir: GradientDirection) {
+        let slice: &mut [OUTPUT] = self.as_mut();
+        Self::fill_gradient_slice(slice, start, end, dir);
+    }
+
+    fn fill_gradient_full(&mut self, start: AXEL, end: AXEL, dir: GradientDirection) {
+        let arr: &mut [OUTPUT] = self.deref_mut();
+        let len: usize = arr.len();
+        if len > 1 {
+            arr[len - 1] = OUTPUT::from(end);
+        }
+        let slice: &mut [OUTPUT] = &mut arr[0..(len - 1)];
+        Self::fill_gradient_slice(slice, start, end, dir);
+    }
+}
+
+//impl<O: From<HSV>> FillGradient<HSV, O> for &mut [O] {
+//    fn fill_gradient_slice(arr: &mut [O], start: HSV, end: HSV, dir: GradientDirection) {
+//        hsv_gradient::<O>(start, end, dir, arr);
+//    }
+//}
+
+impl<'a, O: From<HSV>, T: DerefMut<Target=[O]>> FillGradient<HSV, O> for  T {
+    fn fill_gradient_slice(arr: &mut [O], start: HSV, end: HSV, dir: GradientDirection) {
+        hsv_gradient::<O>(start, end, dir, arr);
+    }
+}
+
+//impl<O: From<ColorRGB>> FillGradient<ColorRGB, O> for &mut [O] {
+//    fn fill_gradient_slice(arr: &mut [O], start: ColorRGB, end: ColorRGB, dir: GradientDirection) {
+////        hsv_gradient::<O>(start, end, dir, arr);
+//    }
+//}
+
 
 /// Possible Directions around the color wheel a gradient can go.
 #[derive(Copy, Clone, Eq, PartialEq, Debug)]
@@ -70,18 +130,25 @@ impl GradientDirection {
     }
 }
 
-/// Creates a axial (two-color) gradient from the HSV values `start` to `end`. This function
-/// will fill the array inclusive of the `start` HSV and exclusive of the `end` HSV. This means
-/// that after completion, `output[output.len() - 1] will not be the end color, but rather the
-/// interpolated color before `start`. If you need the `end` color to appear last, see
-/// `hsv_gradient_inclusive_end`
+/// Creates a axial (two-color) gradient from the HSV values `start` to (exclusive) `end`.
+///
+/// This function will fill the array inclusive of the `start` HSV and exclusive of the `end` HSV.
+/// This means that after completion, `output[output.len() - 1] will not be the end color, but
+/// rather the interpolated color before `start`. If you need the `end` color to appear last, see
+/// `hsv_gradient_inclusive_end`.
 ///
 /// # Edge Cases
 ///
 /// If `output` is empty, the operation returns immediately.
 pub fn hsv_gradient<C: From<HSV>>(start: HSV, end: HSV, dir: GradientDirection, output: &mut [C]) {
-    if output.is_empty() {
-        return;
+    let len = output.len();
+    match len {
+        0 => return,
+        1 => {
+            output[0] = C::from(start);
+            return;
+        },
+        _ => {}
     }
 
     let mut start = start;
@@ -96,56 +163,49 @@ pub fn hsv_gradient<C: From<HSV>>(start: HSV, end: HSV, dir: GradientDirection, 
     }
 
     let hue_distance: i16 = dir.into_hue_distance(start.h, end.h);
-    let sat_distance: i16 = (end.s as i16 - start.s as i16).wrapping_shl(7);
-    let val_distance: i16 = (end.v as i16 - start.v as i16).wrapping_shl(7);
 
-    let hue_delta: i16 = hue_distance / (output.len() as i16);
-    let sat_delta: i16 = sat_distance / (output.len() as i16);
-    let val_delta: i16 = val_distance / (output.len() as i16);
+    let mut lerp: ThreePointLerp = ThreePointLerp::new()
+        .set_lerp_from_distance(0, start.h, hue_distance)
+        .set_lerp_from_diff(1, start.s, end.s)
+        .set_lerp_from_diff(2, start.v, end.v)
+        .modify_delta(|d| d / (len as i16))
+        .modify_delta(|d| d.wrapping_mul(2));
 
-    let hue_delta: i16 = hue_delta.wrapping_mul(2);
-    let sat_delta: i16 = sat_delta.wrapping_mul(2);
-    let val_delta: i16 = val_delta.wrapping_mul(2);
-
-    let mut sat_accum: u16 = (start.s as u16) << 8;
-    let mut val_accum: u16 = (start.v as u16) << 8;
-    let mut hue_accum: u16 = (start.h as u16) << 8;
-
-    for i in output.iter_mut() {
-        let hsv = HSV::new((hue_accum >> 8) as u8,
-                           (sat_accum >> 8) as u8,
-                           (val_accum >> 8) as u8);
-        *i = C::from(hsv);
-        sat_accum = sat_accum.wrapping_add(unsafe{transmute::<i16,u16>(sat_delta)});
-        val_accum = val_accum.wrapping_add(unsafe{transmute::<i16,u16>(val_delta)});
-        hue_accum = hue_accum.wrapping_add(unsafe{transmute::<i16,u16>(hue_delta)});
-    }
+    output.iter_mut()
+        .zip(lerp)
+        .for_each(|(i, hsv)| *i = C::from(HSV::from(hsv)));
 }
 
-/// Creates a axial (two-color) gradient from the HSV values `start` to `end`. This function
-/// will fill the array inclusive of the both the `start` and `end` HSV's. This means that after
-/// completion, `output[output.len() - 1] will be the end color. If you need want a gradient
-/// without the `end` color to appearing last, see `hsv_gradient`.
-///
-/// # Edge Cases
-///
-/// If `output` is empty, the operation returns immediately. If `output.len() == 1`, only the
-/// `start` HSV will be left in the array.
-pub fn hsv_gradient_inclusive_end<C: From<HSV>>(start: HSV, end: HSV,
-                                          dir: GradientDirection, output: &mut [C]) {
+
+pub fn rgb_gradient<C: From<ColorRGB>>(start: ColorRGB, end: ColorRGB, dir: GradientDirection, output: &mut [C]) {
     let len = output.len();
-    if len > 1 {
-        output[len - 1] = C::from(end);
+    match len {
+        0 => return,
+        1 => {
+            output[0] = C::from(start);
+            return;
+        },
+        _ => {}
     }
-    let slice = &mut output[0..(len - 1)];
-    hsv_gradient::<C>(start, end, dir, slice);
+
+    let mut lerp: ThreePointLerp = ThreePointLerp::new()
+        .set_lerp_from_diff(0, start.r, end.r)
+        .set_lerp_from_diff(1, start.g, end.g)
+        .set_lerp_from_diff(2, start.b, end.b)
+        .modify_delta(|d| d / (len as i16))
+        .modify_delta(|d| d.wrapping_mul(2));
+
+    output.iter_mut()
+          .zip(lerp)
+          .for_each(|(i, rgb)| *i = C::from(ColorRGB::from(rgb)));
 }
+
 
 
 #[cfg(test)]
 mod test {
+    use super::*;
     use crate::{HSV};
-    use crate::gradient::{hsv_gradient, hsv_gradient_inclusive_end, GradientDirection};
 
     #[test]
     fn gradient_sweep_test() {
@@ -154,25 +214,27 @@ mod test {
         let mut out: [HSV; 5] = [HSV::BLANK; 5];
 
         let dir = GradientDirection::Shortest;
-        hsv_gradient(start, end, dir, &mut out);
+        out.as_mut().fill_gradient(start, end, dir);
+//        hsv_gradient(start, end, dir, &mut out);
         assert_eq!(*out.last().unwrap(), HSV::new(80, 180, 90));
-        hsv_gradient_inclusive_end(start, end, dir, &mut out);
+        out.as_mut().fill_gradient_full(start, end, dir);
+//        hsv_gradient_inclusive_end(start, end, dir, &mut out);
         assert_eq!(*out.last().unwrap(), end);
 
         let dir = GradientDirection::Forward;
-        hsv_gradient(start, end, dir, &mut out);
+        out.as_mut().fill_gradient(start, end, dir);
         assert_eq!(*out.last().unwrap(), HSV::new(80, 180, 90));
-        hsv_gradient_inclusive_end(start, end, dir, &mut out);
+        out.as_mut().fill_gradient_full(start, end, dir);
         assert_eq!(*out.last().unwrap(), end);
 
         let dir = GradientDirection::Backwards;
-        hsv_gradient(start, end, dir, &mut out);
-        hsv_gradient_inclusive_end(start, end, dir, &mut out);
+        out.as_mut().fill_gradient(start, end, dir);
+        out.as_mut().fill_gradient_full(start, end, dir);
         assert_eq!(*out.last().unwrap(), end);
 
         let dir = GradientDirection::Longest;
-        hsv_gradient(start, end, dir, &mut out);
-        hsv_gradient_inclusive_end(start, end, dir, &mut out);
+        out.as_mut().fill_gradient(start, end, dir);
+        out.as_mut().fill_gradient_full(start, end, dir);
         assert_eq!(*out.last().unwrap(), end);
     }
 }

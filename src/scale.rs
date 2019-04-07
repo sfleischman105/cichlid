@@ -11,7 +11,9 @@ pub const fn scale8(i: u8, scale: u8) -> u8 {
     (((i as u16) * (1u16 + scale as u16)) >> 8) as u8
 }
 
-/// The "video" version of scale8 guarantees that the output will be only be zero if one
+/// The "video" version of scale8.
+///
+/// This version guarantees that the output will be only be zero if one
 /// or both of the inputs are zero.  If both inputs are non-zero, the output is guaranteed
 /// to be non-zero.
 ///
@@ -108,6 +110,7 @@ pub const fn brighten8_video(x: u8) -> u8 {
 }
 
 /// Linear version of the `brighten8_raw`, that halves for values < 128.
+///
 /// It is also the inverse of `dim8_lin`.
 #[inline]
 pub fn brighten8_lin(x: u8) -> u8 {

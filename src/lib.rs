@@ -4,7 +4,6 @@
 //! Currently this library is geared toward use in embedded systems, but does contain useful
 //! APIs that are more generally useful.
 //!
-//!
 //! - **Fast `u8` and `u16` math** — Chiclid includes functions for scaling, dimmming, and
 //!    brightening single and double byte values. Basic trigometric functions (sine, cosine)
 //!    are implemented as well.
@@ -19,14 +18,11 @@
 //! - **Power Consumption Estimating** — Estimating power requirements can be done with
 //!   structs implementing the `PowerEstimator` trait.
 //!
-//!
-//! # Usage
-//!
-//! This crate is [on crates.io](https://crates.io/crates/cichlid) and can be
-//! used by adding `cichlid` to the dependencies in your project's `Cargo.toml`.
+//! This Library is still in its infancy, and as such there may be a lack of documentaion and
+//! rapturous testing.
 //!
 //!
-//! # `no-std` Usage
+//! # `no-std`
 //!
 //! To use in a `no-std` enviorment, simply add the following to your project's `cargo.toml`:
 //!
@@ -42,6 +38,7 @@
 //! [FastLED](https://github.com/FastLED/FastLED), an Arduino library for talking to addressable
 //! LEDs.
 
+// TODO: SERDE
 #![cfg_attr(feature="no-std", no_std)]
 
 pub mod color_codes;
@@ -52,8 +49,27 @@ pub mod rgb;
 pub mod hsv;
 pub mod gradient;
 pub mod power_mgmt;
+mod lerp;
 
 pub use crate::rgb::ColorRGB;
 pub use crate::hsv::HSV;
 //pub use crate::gradient::{hsv_gradient, hsv_gradient_inc_end, GradientDirection};
 pub use crate::power_mgmt::{DefaultPowerEstimator,PowerEstimator};
+
+fn blur(arr: &mut [ColorRGB], amount: u8) {
+    unimplemented!()
+}
+
+
+fn blend(one: HSV, two: HSV) -> HSV {
+    unimplemented!()
+}
+
+fn blend_rgb(one: ColorRGB, two: ColorRGB) -> ColorRGB {
+    unimplemented!()
+}
+
+fn fill_rainbow<C: From<HSV>>(arr: &mut [C], start_hue: u8) {
+    unimplemented!()
+}
+
