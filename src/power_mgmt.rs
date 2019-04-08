@@ -45,9 +45,9 @@ pub trait PowerEstimator {
     fn estimate_strand(strand: &[ColorRGB]) -> u32 {
         let mut sums: [u32; 3] = [0; 3];
         strand.iter().for_each(|p| {
-                sums[0] += u32::from(p.r);
-                sums[1] += u32::from(p.g);
-                sums[2] += u32::from(p.b);
+            sums[0] += u32::from(p.r);
+            sums[1] += u32::from(p.g);
+            sums[2] += u32::from(p.b);
         });
 
         sums[0] *= Self::R_mW;
@@ -58,7 +58,11 @@ pub trait PowerEstimator {
 
     /// Estimates the maximum brightness a strand of pixels can push from a given milli-Watt power
     /// limit.
-    fn estimate_max_brightness(strand: &[ColorRGB], target_brightness: u8, max_power_mW: u32) -> u8 {
+    fn estimate_max_brightness(
+        strand: &[ColorRGB],
+        target_brightness: u8,
+        max_power_mW: u32,
+    ) -> u8 {
         let max_estimated_mW: u32 = Self::estimate_strand(strand);
         let current_estimated_mW: u32 = (max_estimated_mW * u32::from(target_brightness)) / 256;
 
@@ -72,8 +76,12 @@ pub trait PowerEstimator {
     /// Estimates the maximum brightness a strand of pixels can push from a given milli-Volt and
     /// milli-Amp limit.
     #[inline]
-    fn estimate_max_brightness_av(strand: &[ColorRGB], target_brightness: u8,
-                                  max_power_mA: u32, max_power_mV: u32) -> u8 {
+    fn estimate_max_brightness_av(
+        strand: &[ColorRGB],
+        target_brightness: u8,
+        max_power_mA: u32,
+        max_power_mV: u32,
+    ) -> u8 {
         Self::estimate_max_brightness(strand, target_brightness, max_power_mA * max_power_mV)
     }
 }
@@ -87,6 +95,3 @@ impl PowerEstimator for DefaultPowerEstimator {
     const B_mW: u32 = 15 * 5;
     const IDLE_mW: u32 = 5;
 }
-
-
-

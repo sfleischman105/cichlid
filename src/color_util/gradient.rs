@@ -2,20 +2,21 @@
 //!
 //! Create's smooth transitions between any two colors for any number of steps.
 
-#[cfg(not(feature="no-std"))]
-use std::iter::ExactSizeIterator;
-#[cfg(feature="no-std")]
+#[cfg(feature = "no-std")]
 use core::iter::ExactSizeIterator;
+#[cfg(not(feature = "no-std"))]
+use std::iter::ExactSizeIterator;
 
-use crate::{HSV, ColorRGB};
-use crate::math::lerp::ThreePointLerp;
 use crate::color_util::GradientDirection;
+use crate::math::lerp::ThreePointLerp;
+use crate::{ColorRGB, HSV};
 
 impl<'a, T, H: 'a> super::GradientFill for T
-    where
-        T: IntoIterator<Item=&'a mut H>,
-        T::IntoIter : ExactSizeIterator,
-        H: From<HSV> {
+where
+    T: IntoIterator<Item = &'a mut H>,
+    T::IntoIter: ExactSizeIterator,
+    H: From<HSV>,
+{
     fn gradient_fill(self, start: HSV, end: HSV, dir: GradientDirection) {
         let iter = self.into_iter();
         let length = iter.len();
@@ -24,10 +25,11 @@ impl<'a, T, H: 'a> super::GradientFill for T
 }
 
 impl<'a, T, H: 'a> super::GradientFillToInclusive for T
-    where
-        T: IntoIterator<Item=&'a mut H>,
-        T::IntoIter : ExactSizeIterator + DoubleEndedIterator,
-        H: From<HSV> {
+where
+    T: IntoIterator<Item = &'a mut H>,
+    T::IntoIter: ExactSizeIterator + DoubleEndedIterator,
+    H: From<HSV>,
+{
     fn gradient_fill_to_inclusive(self, start: HSV, end: HSV, dir: GradientDirection) {
         let mut iter = self.into_iter();
         if let Some(t) = iter.next_back() {
@@ -41,10 +43,11 @@ impl<'a, T, H: 'a> super::GradientFillToInclusive for T
 }
 
 impl<'a, T, H: 'a> super::GradientFillRGB for T
-    where
-        T: IntoIterator<Item=&'a mut H>,
-        T::IntoIter : ExactSizeIterator,
-        H: From<ColorRGB> {
+where
+    T: IntoIterator<Item = &'a mut H>,
+    T::IntoIter: ExactSizeIterator,
+    H: From<ColorRGB>,
+{
     fn gradient_fill_rgb(self, start: ColorRGB, end: ColorRGB) {
         let iter = self.into_iter();
         let length = iter.len();
@@ -53,10 +56,11 @@ impl<'a, T, H: 'a> super::GradientFillRGB for T
 }
 
 impl<'a, T, H: 'a> super::GradientFillRGBToInclusive for T
-    where
-        T: IntoIterator<Item=&'a mut H>,
-        T::IntoIter : ExactSizeIterator + DoubleEndedIterator,
-        H: From<ColorRGB> {
+where
+    T: IntoIterator<Item = &'a mut H>,
+    T::IntoIter: ExactSizeIterator + DoubleEndedIterator,
+    H: From<ColorRGB>,
+{
     fn gradient_fill_to_inclusive(self, start: ColorRGB, end: ColorRGB) {
         let mut iter = self.into_iter();
         if let Some(t) = iter.next_back() {
@@ -79,7 +83,13 @@ impl<'a, T, H: 'a> super::GradientFillRGBToInclusive for T
 /// # Edge Cases
 ///
 /// If `output` is empty, the operation returns immediately.
-pub fn hsv_gradient<'a, C: 'a + From<HSV>, I: IntoIterator<Item=&'a mut C>>(output: I, length: usize, start: HSV, end: HSV, dir: GradientDirection) {
+pub fn hsv_gradient<'a, C: 'a + From<HSV>, I: IntoIterator<Item = &'a mut C>>(
+    output: I,
+    length: usize,
+    start: HSV,
+    end: HSV,
+    dir: GradientDirection,
+) {
     if length == 0 {
         return;
     }
@@ -104,13 +114,18 @@ pub fn hsv_gradient<'a, C: 'a + From<HSV>, I: IntoIterator<Item=&'a mut C>>(outp
         .modify_delta(|d| d / (length as i16))
         .modify_delta(|d| d.wrapping_mul(2));
 
-    output.into_iter()
+    output
+        .into_iter()
         .zip(lerp)
         .for_each(|(i, hsv)| *i = C::from(HSV::from(hsv)));
 }
 
-
-pub fn rgb_gradient<'a, C: 'a + From<ColorRGB>, I: IntoIterator<Item=&'a mut C>>(output: I, length: usize, start: ColorRGB, end: ColorRGB) {
+pub fn rgb_gradient<'a, C: 'a + From<ColorRGB>, I: IntoIterator<Item = &'a mut C>>(
+    output: I,
+    length: usize,
+    start: ColorRGB,
+    end: ColorRGB,
+) {
     if length == 0 {
         return;
     }
@@ -122,20 +137,19 @@ pub fn rgb_gradient<'a, C: 'a + From<ColorRGB>, I: IntoIterator<Item=&'a mut C>>
         .modify_delta(|d| d / (length as i16))
         .modify_delta(|d| d.wrapping_mul(2));
 
-    output.into_iter()
-          .zip(lerp)
-          .for_each(|(i, rgb)| *i = C::from(ColorRGB::from(rgb)));
+    output
+        .into_iter()
+        .zip(lerp)
+        .for_each(|(i, rgb)| *i = C::from(ColorRGB::from(rgb)));
 }
-
-
 
 #[cfg(test)]
 mod test {
     use super::*;
     use crate::color_util::*;
-    use crate::{HSV};
+    use crate::HSV;
 
-     #[test]
+    #[test]
     fn gradient_sweep_test() {
         let start: HSV = HSV::new(0, 100, 50);
         let end: HSV = HSV::new(100, 200, 100);

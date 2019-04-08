@@ -1,17 +1,17 @@
 //! Contains the HSV (hue, saturation, value) representation of a color.
 
-#[cfg(feature="no-std")]
+#[cfg(feature = "no-std")]
 use core::hint::unreachable_unchecked;
-#[cfg(not(feature="no-std"))]
+#[cfg(not(feature = "no-std"))]
 use std::hint::unreachable_unchecked;
 
-#[cfg(feature="no-std")]
+#[cfg(feature = "no-std")]
 use core::fmt;
-#[cfg(not(feature="no-std"))]
+#[cfg(not(feature = "no-std"))]
 use std::fmt;
 
-use crate::ColorRGB;
 use crate::math::scale::*;
+use crate::ColorRGB;
 
 const HSV_SECTION_3: u8 = 0x40;
 
@@ -38,7 +38,7 @@ pub fn hue_to_full_rgb(hue: u8) -> ColorRGB {
         0b101 => ColorRGB::new(third, 0, 255 - third),
         0b110 => ColorRGB::new(85 + third, 0, 171 - third),
         0b111 => ColorRGB::new(170 + third, 0, 85 - third),
-        _ => unsafe {unreachable_unchecked()}
+        _ => unsafe { unreachable_unchecked() },
     };
 
     rgb
@@ -122,7 +122,7 @@ impl From<[u8; 3]> for HSV {
 
 impl HSV {
     /// Blank `HSV` object where all values are initialized to zero.
-    pub const BLANK: HSV = HSV {h: 0, s: 0, v: 0};
+    pub const BLANK: HSV = HSV { h: 0, s: 0, v: 0 };
 
     /// Create a new `HSV` object.
     #[inline(always)]
@@ -175,7 +175,7 @@ impl HSV {
         // The brightness floor is minimum number that all of
         // R, G, and B will be set to.
         let invsat: u8 = 255 - saturation;
-        let brightness_floor: u8 = (( u16::from(value) * u16::from(invsat)) / 256) as u8;
+        let brightness_floor: u8 = ((u16::from(value) * u16::from(invsat)) / 256) as u8;
 
         // The color amplitude is the maximum amount of R, G, and B
         // that will be added on top of the brightness_floor to
@@ -190,7 +190,8 @@ impl HSV {
         let rampdown: u8 = (HSV_SECTION_3 - 1) - offset; // 63..0
 
         // compute color-amplitude-scaled-down versions of rampup and rampdown
-        let rampup_amp_adj: u8 = ((u16::from(rampup) * u16::from(color_amplitude)) / (256u16 / 4)) as u8;
+        let rampup_amp_adj: u8 =
+            ((u16::from(rampup) * u16::from(color_amplitude)) / (256u16 / 4)) as u8;
         let rampdown_amp_adj: u8 =
             ((u16::from(rampdown) * u16::from(color_amplitude)) / (256u16 / 4)) as u8;
 
@@ -227,7 +228,7 @@ impl HSV {
 
 #[cfg(test)]
 mod test {
-    use crate::{HSV, ColorRGB};
+    use crate::{ColorRGB, HSV};
 
     fn into_360(n: u8) -> u32 {
         ((n as u32) * 360) >> 8
@@ -246,7 +247,6 @@ mod test {
         for h in (0..=255).step_by(1) {
             let hsv = HSV::new(h as u8, 255, 255);
             let rgb: ColorRGB = ColorRGB::from(hsv);
-
         }
     }
 
@@ -263,5 +263,3 @@ mod test {
         }
     }
 }
-
-

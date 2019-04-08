@@ -1,7 +1,9 @@
 use crate::ColorRGB;
 
 impl<'a, T> super::Blur for T
-where  T: IntoIterator<Item=&'a mut ColorRGB> {
+where
+    T: IntoIterator<Item = &'a mut ColorRGB>,
+{
     fn blur(self, blur_amount: u8) {
         let keep: u8 = 255 - blur_amount;
         let seep: u8 = blur_amount >> 1;
@@ -36,8 +38,12 @@ mod test {
 
     #[test]
     fn blur_test() {
-        let mut arr = [ColorRGB::Black, ColorRGB::Red,
-            ColorRGB::BlueViolet, ColorRGB::Yellow];
+        let mut arr = [
+            ColorRGB::Black,
+            ColorRGB::Red,
+            ColorRGB::BlueViolet,
+            ColorRGB::Yellow,
+        ];
 
         println!("{:?}", arr);
         for _ in 0..4 {

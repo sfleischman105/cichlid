@@ -39,29 +39,28 @@
 //! LEDs.
 
 // TODO: SERDE
-#![cfg_attr(feature="no-std", no_std)]
+#![cfg_attr(feature = "no-std", no_std)]
 pub mod color_codes;
 
-pub mod rgb;
-pub mod hsv;
 pub mod color_util;
-pub mod power_mgmt;
+pub mod hsv;
 pub mod math;
+pub mod power_mgmt;
+pub mod rgb;
 
-
-pub use crate::rgb::ColorRGB;
+pub use crate::color_util::GradientDirection;
 pub use crate::hsv::HSV;
-pub use crate::color_util::{GradientDirection};
+pub use crate::power_mgmt::{DefaultPowerEstimator, PowerEstimator};
 pub use crate::prelude::*;
-pub use crate::power_mgmt::{DefaultPowerEstimator,PowerEstimator};
+pub use crate::rgb::ColorRGB;
 
 pub mod prelude {
     //! Easy importing of color auto traits.
+    pub use crate::color_util::Blur as _;
     pub use crate::color_util::GradientFill as _;
-    pub use crate::color_util::GradientFillToInclusive as _;
     pub use crate::color_util::GradientFillRGB as _;
     pub use crate::color_util::GradientFillRGBToInclusive as _;
+    pub use crate::color_util::GradientFillToInclusive as _;
     pub use crate::color_util::RainbowFill as _;
     pub use crate::color_util::RainbowFillSingleCycle as _;
-    pub use crate::color_util::Blur as _;
 }

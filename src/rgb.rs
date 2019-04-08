@@ -1,30 +1,30 @@
 //! Contains the structure and associated methods for a RGB Object.
 
-#[cfg(feature="no-std")]
+#[cfg(feature = "no-std")]
 use core::cmp::{Ord, Ordering, PartialOrd};
-#[cfg(not(feature="no-std"))]
+#[cfg(not(feature = "no-std"))]
 use std::cmp::{Ord, Ordering, PartialOrd};
 
-#[cfg(feature="no-std")]
+#[cfg(feature = "no-std")]
 use core::fmt;
-#[cfg(not(feature="no-std"))]
+#[cfg(not(feature = "no-std"))]
 use std::fmt;
 
-#[cfg(feature="no-std")]
+#[cfg(feature = "no-std")]
 use core::ops::{
     Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, Div, DivAssign, Index, IndexMut, Mul,
     MulAssign, Neg, Not, Rem, ShrAssign, Sub, SubAssign,
 };
-#[cfg(not(feature="no-std"))]
+#[cfg(not(feature = "no-std"))]
 use std::ops::{
     Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, Div, DivAssign, Index, IndexMut, Mul,
     MulAssign, Neg, Not, Rem, ShrAssign, Sub, SubAssign,
 };
 
-use crate::math::scale::*;
-use crate::HSV;
-use crate::power_mgmt::{PowerEstimator};
 use crate::math::blend;
+use crate::math::scale::*;
+use crate::power_mgmt::PowerEstimator;
+use crate::HSV;
 
 //pub trait RGBOrder {
 //    const FIRST: usize;
@@ -136,8 +136,8 @@ impl ColorRGB {
     /// Modifies the red component by a given function.
     #[inline]
     pub fn modify_red<F>(&mut self, mut f: F)
-        where
-                for<'w> F: FnMut(u8) -> u8,
+    where
+        for<'w> F: FnMut(u8) -> u8,
     {
         self.r = f(self.r);
     }
@@ -145,8 +145,8 @@ impl ColorRGB {
     /// Modifies the green component by a given function.
     #[inline]
     pub fn modify_green<F>(&mut self, mut f: F)
-        where
-                for<'w> F: FnMut(u8) -> u8,
+    where
+        for<'w> F: FnMut(u8) -> u8,
     {
         self.g = f(self.g);
     }
@@ -154,8 +154,8 @@ impl ColorRGB {
     /// Modifies the blue component by a given function.
     #[inline]
     pub fn modify_blue<F>(&mut self, mut f: F)
-        where
-                for<'w> F: FnMut(u8) -> u8,
+    where
+        for<'w> F: FnMut(u8) -> u8,
     {
         self.b = f(self.b);
     }
@@ -163,8 +163,8 @@ impl ColorRGB {
     /// Function to modify each component by a given function.
     #[inline]
     pub fn modify_all<F>(&mut self, mut f: F)
-        where
-                for<'w> F: FnMut(u8) -> u8,
+    where
+        for<'w> F: FnMut(u8) -> u8,
     {
         self.r = f(self.r);
         self.g = f(self.g);
@@ -237,7 +237,9 @@ impl ColorRGB {
     /// Estimates the power consumption of a single pixel. Returns the number of MilliWatts used
     /// to power this single pixel at it's current red, green, and blue component values.
     pub fn estimate_power<T>(self) -> u32
-        where T: PowerEstimator {
+    where
+        T: PowerEstimator,
+    {
         T::estimate(self)
     }
 }
@@ -510,7 +512,8 @@ impl ColorRGB {
     pub const Beige: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Beige);
     pub const Bisque: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Bisque);
     pub const Black: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Black);
-    pub const BlanchedAlmond: ColorRGB = ColorRGB::from_color_code(crate::color_codes::BlanchedAlmond);
+    pub const BlanchedAlmond: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::BlanchedAlmond);
     pub const Blue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Blue);
     pub const BlueViolet: ColorRGB = ColorRGB::from_color_code(crate::color_codes::BlueViolet);
     pub const Brown: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Brown);
@@ -519,28 +522,35 @@ impl ColorRGB {
     pub const Chartreuse: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Chartreuse);
     pub const Chocolate: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Chocolate);
     pub const Coral: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Coral);
-    pub const CornflowerBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::CornflowerBlue);
+    pub const CornflowerBlue: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::CornflowerBlue);
     pub const Cornsilk: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Cornsilk);
     pub const Crimson: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Crimson);
     pub const Cyan: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Cyan);
     pub const DarkBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkBlue);
     pub const DarkCyan: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkCyan);
-    pub const DarkGoldenrod: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkGoldenrod);
+    pub const DarkGoldenrod: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::DarkGoldenrod);
     pub const DarkGray: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkGray);
     pub const DarkGrey: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkGrey);
     pub const DarkGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkGreen);
     pub const DarkKhaki: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkKhaki);
     pub const DarkMagenta: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkMagenta);
-    pub const DarkOliveGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkOliveGreen);
+    pub const DarkOliveGreen: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::DarkOliveGreen);
     pub const DarkOrange: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkOrange);
     pub const DarkOrchid: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkOrchid);
     pub const DarkRed: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkRed);
     pub const DarkSalmon: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkSalmon);
     pub const DarkSeaGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkSeaGreen);
-    pub const DarkSlateBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkSlateBlue);
-    pub const DarkSlateGray: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkSlateGray);
-    pub const DarkSlateGrey: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkSlateGrey);
-    pub const DarkTurquoise: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkTurquoise);
+    pub const DarkSlateBlue: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::DarkSlateBlue);
+    pub const DarkSlateGray: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::DarkSlateGray);
+    pub const DarkSlateGrey: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::DarkSlateGrey);
+    pub const DarkTurquoise: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::DarkTurquoise);
     pub const DarkViolet: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkViolet);
     pub const DeepPink: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DeepPink);
     pub const DeepSkyBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DeepSkyBlue);
@@ -566,7 +576,8 @@ impl ColorRGB {
     pub const Ivory: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Ivory);
     pub const Khaki: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Khaki);
     pub const Lavender: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Lavender);
-    pub const LavenderBlush: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LavenderBlush);
+    pub const LavenderBlush: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::LavenderBlush);
     pub const LawnGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LawnGreen);
     pub const LemonChiffon: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LemonChiffon);
     pub const LightBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightBlue);
@@ -578,11 +589,15 @@ impl ColorRGB {
     pub const LightGrey: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightGrey);
     pub const LightPink: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightPink);
     pub const LightSalmon: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightSalmon);
-    pub const LightSeaGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightSeaGreen);
+    pub const LightSeaGreen: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::LightSeaGreen);
     pub const LightSkyBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightSkyBlue);
-    pub const LightSlateGray: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightSlateGray);
-    pub const LightSlateGrey: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightSlateGrey);
-    pub const LightSteelBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightSteelBlue);
+    pub const LightSlateGray: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::LightSlateGray);
+    pub const LightSlateGrey: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::LightSlateGrey);
+    pub const LightSteelBlue: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::LightSteelBlue);
     pub const LightYellow: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightYellow);
     pub const Lime: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Lime);
     pub const LimeGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LimeGreen);
@@ -594,12 +609,16 @@ impl ColorRGB {
     pub const MediumBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MediumBlue);
     pub const MediumOrchid: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MediumOrchid);
     pub const MediumPurple: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MediumPurple);
-    pub const MediumSeaGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MediumSeaGreen);
-    pub const MediumSlateBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MediumSlateBlue);
+    pub const MediumSeaGreen: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::MediumSeaGreen);
+    pub const MediumSlateBlue: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::MediumSlateBlue);
     pub const MediumSpringGreen: ColorRGB =
         ColorRGB::from_color_code(crate::color_codes::MediumSpringGreen);
-    pub const MediumTurquoise: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MediumTurquoise);
-    pub const MediumVioletRed: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MediumVioletRed);
+    pub const MediumTurquoise: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::MediumTurquoise);
+    pub const MediumVioletRed: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::MediumVioletRed);
     pub const MidnightBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MidnightBlue);
     pub const MintCream: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MintCream);
     pub const MistyRose: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MistyRose);
@@ -612,10 +631,13 @@ impl ColorRGB {
     pub const Orange: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Orange);
     pub const OrangeRed: ColorRGB = ColorRGB::from_color_code(crate::color_codes::OrangeRed);
     pub const Orchid: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Orchid);
-    pub const PaleGoldenrod: ColorRGB = ColorRGB::from_color_code(crate::color_codes::PaleGoldenrod);
+    pub const PaleGoldenrod: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::PaleGoldenrod);
     pub const PaleGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::PaleGreen);
-    pub const PaleTurquoise: ColorRGB = ColorRGB::from_color_code(crate::color_codes::PaleTurquoise);
-    pub const PaleVioletRed: ColorRGB = ColorRGB::from_color_code(crate::color_codes::PaleVioletRed);
+    pub const PaleTurquoise: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::PaleTurquoise);
+    pub const PaleVioletRed: ColorRGB =
+        ColorRGB::from_color_code(crate::color_codes::PaleVioletRed);
     pub const PapayaWhip: ColorRGB = ColorRGB::from_color_code(crate::color_codes::PapayaWhip);
     pub const PeachPuff: ColorRGB = ColorRGB::from_color_code(crate::color_codes::PeachPuff);
     pub const Peru: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Peru);

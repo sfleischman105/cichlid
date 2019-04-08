@@ -5,11 +5,11 @@
 //!
 //! #
 
+pub mod blur;
 pub mod gradient;
 pub mod rainbow;
-pub mod blur;
 
-use crate::{HSV, ColorRGB};
+use crate::{ColorRGB, HSV};
 
 /// Fills an iterable object with a gradient from the `HSV` values `start` to `finish`, exclusive of the
 /// `finish`.
@@ -35,13 +35,12 @@ pub trait GradientFillRGBToInclusive {
     fn gradient_fill_to_inclusive(self, start: ColorRGB, end: ColorRGB);
 }
 
-
 /// Fills an iterable object with a rainbow hue of a desired step size.
 ///
 /// Step sizes are unsigned integers `u8`, `u16`, or `u32`. The Most significant byte of
 /// each integer is used to represent the full number of hues to increment between each iterated
 /// value, while the other bytes (if present) are added as a fractional component.
-pub trait RainbowFill<C> : Sized {
+pub trait RainbowFill<C>: Sized {
     /// Fills an object with a rainbow gradient hue of a desired step size and from a desired
     /// starting hue.
     #[inline(always)]
@@ -115,14 +114,14 @@ impl GradientDirection {
                 } else {
                     HueDirection::Forward
                 }
-            },
+            }
             GradientDirection::Longest => {
                 if hue_diff < 128 {
                     HueDirection::Backwards
                 } else {
                     HueDirection::Forward
                 }
-            },
+            }
             GradientDirection::Forward => HueDirection::Forward,
             GradientDirection::Backwards => HueDirection::Backwards,
         }
