@@ -18,8 +18,8 @@
 //! - **Power Consumption Estimating** — Estimating power requirements can be done with
 //!   structs implementing the `PowerEstimator` trait.
 //!
-//! This Library is still in its infancy, and as such there may be a lack of documentaion and
-//! rapturous testing.
+//! This Library is still in its infancy, and as such there may be a lack of documentation and
+//! vigorous testing.
 //!
 //!
 //! # `no-std`
@@ -40,16 +40,14 @@
 
 // TODO: SERDE
 #![cfg_attr(feature="no-std", no_std)]
-
 pub mod color_codes;
 
-pub mod scale;
-pub mod trig;
 pub mod rgb;
 pub mod hsv;
 pub mod color_util;
 pub mod power_mgmt;
-mod lerp;
+pub mod math;
+
 
 pub use crate::rgb::ColorRGB;
 pub use crate::hsv::HSV;
@@ -58,24 +56,12 @@ pub use crate::prelude::*;
 pub use crate::power_mgmt::{DefaultPowerEstimator,PowerEstimator};
 
 pub mod prelude {
-    pub use crate::color_util::{FillGradient, FillGradientRGB,
-                                FillGradientFull, FillGradientRGBFull};
+    //! Easy importing of color auto traits.
+    pub use crate::color_util::GradientFill as _;
+    pub use crate::color_util::GradientFillToInclusive as _;
+    pub use crate::color_util::GradientFillRGB as _;
+    pub use crate::color_util::GradientFillRGBToInclusive as _;
+    pub use crate::color_util::RainbowFill as _;
+    pub use crate::color_util::RainbowFillSingleCycle as _;
+    pub use crate::color_util::Blur as _;
 }
-
-fn blur(arr: &mut [ColorRGB], amount: u8) {
-    unimplemented!()
-}
-
-
-fn blend(one: HSV, two: HSV) -> HSV {
-    unimplemented!()
-}
-
-fn blend_rgb(one: ColorRGB, two: ColorRGB) -> ColorRGB {
-    unimplemented!()
-}
-
-fn fill_rainbow<C: From<HSV>>(arr: &mut [C], start_hue: u8) {
-    unimplemented!()
-}
-

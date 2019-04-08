@@ -2,6 +2,8 @@
 //!
 //! Credit for most of these functions goes to the authoers of the FastLED library.
 
+#![allow(clippy::cast_lossless)]
+
 /// Scales one byte (`i`) by a second one (`scale`), which is treated as the numerator
 /// of a fraction whose denominator is `256`.
 ///
@@ -36,7 +38,7 @@ pub fn nscale8(int: &mut u8, scale: u8) {
 /// In place version of `scale8`, but operating on two bytes with the same scale.
 #[inline(always)]
 pub fn nscale8x2(int_1: &mut u8, int_2: &mut u8, scale: u8) {
-    let scaler: u16 = 1u16 + scale as u16;
+    let scaler: u16 = 1u16 + u16::from(scale);
     *int_1 = (((*int_1 as u16) * scaler) >> 8) as u8;
     *int_2 = (((*int_2 as u16) * scaler) >> 8) as u8;
 }
@@ -44,7 +46,7 @@ pub fn nscale8x2(int_1: &mut u8, int_2: &mut u8, scale: u8) {
 /// In place version of `scale8`, but operating on three bytes with the same scale.
 #[inline(always)]
 pub fn nscale8x3(int_1: &mut u8, int_2: &mut u8, int_3: &mut u8, scale: u8) {
-    let scaler: u16 = 1u16 + scale as u16;
+    let scaler: u16 = 1u16 + u16::from(scale);
     *int_1 = (((*int_1 as u16) * scaler) >> 8) as u8;
     *int_2 = (((*int_2 as u16) * scaler) >> 8) as u8;
     *int_3 = (((*int_3 as u16) * scaler) >> 8) as u8;
@@ -53,7 +55,7 @@ pub fn nscale8x3(int_1: &mut u8, int_2: &mut u8, int_3: &mut u8, scale: u8) {
 /// In place version of `scale8`, but operating on four bytes with the same scale.
 #[inline(always)]
 pub fn nscale8x4(int_1: &mut u8, int_2: &mut u8, int_3: &mut u8, int_4: &mut u8, scale: u8) {
-    let scaler: u16 = 1u16 + scale as u16;
+    let scaler: u16 = 1u16 + u16::from(scale);
     *int_1 = (((*int_1 as u16) * scaler) >> 8) as u8;
     *int_2 = (((*int_2 as u16) * scaler) >> 8) as u8;
     *int_3 = (((*int_3 as u16) * scaler) >> 8) as u8;

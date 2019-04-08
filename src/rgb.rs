@@ -1,8 +1,4 @@
 //! Contains the structure and associated methods for a RGB Object.
-#[cfg(feature="no-std")]
-use core::mem::transmute;
-#[cfg(not(feature="no-std"))]
-use std::mem::transmute;
 
 #[cfg(feature="no-std")]
 use core::cmp::{Ord, Ordering, PartialOrd};
@@ -25,9 +21,10 @@ use std::ops::{
     MulAssign, Neg, Not, Rem, ShrAssign, Sub, SubAssign,
 };
 
-use crate::scale::*;
+use crate::math::scale::*;
 use crate::HSV;
 use crate::power_mgmt::{PowerEstimator};
+use crate::math::blend;
 
 //pub trait RGBOrder {
 //    const FIRST: usize;
@@ -76,9 +73,9 @@ impl ColorRGB {
     #[inline(always)]
     pub const fn from_color_code(code: u32) -> Self {
         ColorRGB {
-            r: (code >> 16) as u8 & 0xFF,
-            g: (code >> 8) as u8 & 0xFF,
-            b: (code >> 0) as u8 & 0xFF,
+            r: (code >> 16) as u8,
+            g: (code >> 8) as u8,
+            b: code as u8,
         }
     }
 
@@ -182,7 +179,7 @@ impl ColorRGB {
 
     /// Scales the current `ColorRGB` by another pixel.
     #[inline]
-    pub fn scale_from_other(&mut self, other: &ColorRGB) {
+    pub fn scale_from_other(&mut self, other: ColorRGB) {
         nscale8(&mut self.r, other.r);
         nscale8(&mut self.g, other.g);
         nscale8(&mut self.b, other.b);
@@ -197,9 +194,9 @@ impl ColorRGB {
     /// Maintains the ratio of red, green, and blue while maximizing brightness.
     #[inline]
     pub fn maximize_brightness(&mut self) {
-        let maxi: u8 = self.r.max(self.g.max(self.b));
-        let b_factor: u16 = (maxi as u16 * 256) / maxi as u16;
-        self.modify_all(|c| ((b_factor * c as u16) / 256) as u8);
+        let maxi: u16 = u16::from(self.r.max(self.g.max(self.b)));
+        let b_factor: u16 = (maxi * 256) / maxi;
+        self.modify_all(|c| ((b_factor * u16::from(c)) / 256) as u8);
     }
 
     /// Returns the luminosity of a pixel.
@@ -222,11 +219,26 @@ impl ColorRGB {
         luma
     }
 
+    /// Blends two `ColorRGB`s together.
+    ///
+    /// The parameter `amount_of_other` is read as a fractional component. For example, a
+    /// `amount_of_other` of `128` creates a `ColorRGB` equally blended between the two,
+    /// while an `amount_of_other` of `0` returns self.
+    pub fn blend(&mut self, other: ColorRGB, amount_of_other: u8) {
+        if amount_of_other == 255 {
+            *self = other;
+        } else if amount_of_other != 0 {
+            self.r = blend(self.r, other.r, amount_of_other);
+            self.g = blend(self.g, other.g, amount_of_other);
+            self.b = blend(self.b, other.b, amount_of_other);
+        }
+    }
+
     /// Estimates the power consumption of a single pixel. Returns the number of MilliWatts used
     /// to power this single pixel at it's current red, green, and blue component values.
-    pub fn estimate_power<T>(&self) -> u32
+    pub fn estimate_power<T>(self) -> u32
         where T: PowerEstimator {
-        T::estimate(*self)
+        T::estimate(self)
     }
 }
 
@@ -268,7 +280,7 @@ impl Index<usize> for ColorRGB {
     #[inline(always)]
     fn index(&self, idx: usize) -> &u8 {
         unsafe {
-            let arr: &[u8; 3] = transmute(self);
+            let arr: &[u8; 3] = &*(self as *const ColorRGB as *const [u8; 3]);
             &arr[idx]
         }
     }
@@ -278,7 +290,7 @@ impl IndexMut<usize> for ColorRGB {
     #[inline(always)]
     fn index_mut(&mut self, idx: usize) -> &mut u8 {
         unsafe {
-            let arr: &mut [u8; 3] = transmute(self);
+            let arr: &mut [u8; 3] = &mut *(self as *mut ColorRGB as *mut [u8; 3]);
             &mut arr[idx]
         }
     }
@@ -407,8 +419,8 @@ impl PartialOrd for ColorRGB {
 impl Ord for ColorRGB {
     #[inline]
     fn cmp(&self, rhs: &ColorRGB) -> Ordering {
-        let rhs_t: u16 = rhs.r as u16 + rhs.b as u16 + rhs.g as u16;
-        let lhs_t: u16 = self.r as u16 + self.b as u16 + self.g as u16;
+        let rhs_t: u16 = u16::from(rhs.r) + u16::from(rhs.g) + u16::from(rhs.b);
+        let lhs_t: u16 = u16::from(self.r) + u16::from(self.g) + u16::from(self.b);
         lhs_t.cmp(&rhs_t)
     }
 }

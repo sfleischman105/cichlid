@@ -18,10 +18,10 @@ pub fn sin16(theta: u16) -> i16 {
 
     let section: u8 = (offset / 256) as u8;
     let b: u16 = unsafe {*BASE.get_unchecked(section as usize)};
-    let m: u16 = unsafe {*SLOPE.get_unchecked(section as usize)} as u16;
+    let m: u16 = u16::from(unsafe {*SLOPE.get_unchecked(section as usize)});
 
     let secoffset8: u8 = (offset as u8) / 2;
-    let mx: u16 = m * secoffset8 as u16;
+    let mx: u16 = m * u16::from(secoffset8);
     let mut y: i16 = (mx + b) as i16;
     if (theta & 0x8000) != 0 {
         y = -y;

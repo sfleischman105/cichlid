@@ -3,6 +3,7 @@ use core::mem::transmute;
 #[cfg(not(feature="no-std"))]
 use std::mem::transmute;
 
+/// Three Dimension Linear Interpolation
 pub struct ThreePointLerp {
     pub delta: [i16; 3],
     pub accum: [u16; 3]
@@ -19,7 +20,7 @@ impl ThreePointLerp {
 
     #[inline(always)]
     pub fn set_lerp_from_diff(self, num: usize, start: u8, end: u8) -> Self {
-        let distance: i16 = ((end as i16).wrapping_sub(start as i16)).wrapping_shl(7);
+        let distance: i16 = (i16::from(end).wrapping_sub(i16::from(start))).wrapping_shl(7);
         self.set_lerp_from_distance(num, start, distance)
     }
 
@@ -27,7 +28,7 @@ impl ThreePointLerp {
     pub fn set_lerp_from_distance(mut self, num: usize, start: u8, distance: i16) -> Self {
         assert!(num <= 2);
         self.delta[num] = distance;
-        self.accum[num] = (start as u16) << 8;
+        self.accum[num] = u16::from(start) << 8;
         self
     }
 

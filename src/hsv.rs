@@ -1,11 +1,6 @@
 //! Contains the HSV (hue, saturation, value) representation of a color.
 
 #[cfg(feature="no-std")]
-use core::mem::transmute;
-#[cfg(not(feature="no-std"))]
-use std::mem::transmute;
-
-#[cfg(feature="no-std")]
 use core::hint::unreachable_unchecked;
 #[cfg(not(feature="no-std"))]
 use std::hint::unreachable_unchecked;
@@ -16,7 +11,7 @@ use core::fmt;
 use std::fmt;
 
 use crate::ColorRGB;
-use crate::scale::*;
+use crate::math::scale::*;
 
 const HSV_SECTION_3: u8 = 0x40;
 
@@ -60,32 +55,32 @@ pub struct HSV {
 impl HSV {
     /// Grabs the hue component of the `HSV`.
     #[inline(always)]
-    pub fn h(&self) -> u8 {
+    pub fn h(self) -> u8 {
         self.h
     }
     /// Grabs the saturation component of the `HSV`.
     #[inline(always)]
-    pub fn s(&self) -> u8 {
+    pub fn s(self) -> u8 {
         self.s
     }
     /// Grabs the value component of the `HSV`.
     #[inline(always)]
-    pub fn v(&self) -> u8 {
+    pub fn v(self) -> u8 {
         self.v
     }
     /// Grabs the hue component of the `HSV`.
     #[inline(always)]
-    pub fn hue(&self) -> u8 {
+    pub fn hue(self) -> u8 {
         self.h()
     }
     /// Grabs the saturation component of the `HSV`.
     #[inline(always)]
-    pub fn saturation(&self) -> u8 {
+    pub fn saturation(self) -> u8 {
         self.s()
     }
     /// Grabs the value component of the `HSV`.
     #[inline(always)]
-    pub fn value(&self) -> u8 {
+    pub fn value(self) -> u8 {
         self.v()
     }
     /// Sets the hue component of the `HSV`.
@@ -180,7 +175,7 @@ impl HSV {
         // The brightness floor is minimum number that all of
         // R, G, and B will be set to.
         let invsat: u8 = 255 - saturation;
-        let brightness_floor: u8 = ((value as u16 * invsat as u16) / 256) as u8;
+        let brightness_floor: u8 = (( u16::from(value) * u16::from(invsat)) / 256) as u8;
 
         // The color amplitude is the maximum amount of R, G, and B
         // that will be added on top of the brightness_floor to
@@ -195,9 +190,9 @@ impl HSV {
         let rampdown: u8 = (HSV_SECTION_3 - 1) - offset; // 63..0
 
         // compute color-amplitude-scaled-down versions of rampup and rampdown
-        let rampup_amp_adj: u8 = ((rampup as u16 * color_amplitude as u16) / (256u16 / 4)) as u8;
+        let rampup_amp_adj: u8 = ((u16::from(rampup) * u16::from(color_amplitude)) / (256u16 / 4)) as u8;
         let rampdown_amp_adj: u8 =
-            ((rampdown as u16 * color_amplitude as u16) / (256u16 / 4)) as u8;
+            ((u16::from(rampdown) * u16::from(color_amplitude)) / (256u16 / 4)) as u8;
 
         // add brightness_floor offset to everything
         let rampup_adj_with_floor: u8 = rampup_amp_adj + brightness_floor;

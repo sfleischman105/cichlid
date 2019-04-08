@@ -2,35 +2,33 @@
 //!
 //! Create's smooth transitions between any two colors for any number of steps.
 
-#[cfg(feature="no-std")]
-use core::ops::DerefMut;
 #[cfg(not(feature="no-std"))]
-use std::ops::DerefMut;
-
 use std::iter::ExactSizeIterator;
+#[cfg(feature="no-std")]
+use core::iter::ExactSizeIterator;
 
 use crate::{HSV, ColorRGB};
-use crate::lerp::ThreePointLerp;
+use crate::math::lerp::ThreePointLerp;
 use crate::color_util::GradientDirection;
 
-impl<'a, T, H: 'a> super::FillGradient for T
+impl<'a, T, H: 'a> super::GradientFill for T
     where
         T: IntoIterator<Item=&'a mut H>,
         T::IntoIter : ExactSizeIterator,
         H: From<HSV> {
-    fn fill_gradient(self, start: HSV, end: HSV, dir: GradientDirection) {
+    fn gradient_fill(self, start: HSV, end: HSV, dir: GradientDirection) {
         let iter = self.into_iter();
         let length = iter.len();
         hsv_gradient(iter, length, start, end, dir);
     }
 }
 
-impl<'a, T, H: 'a> super::FillGradientFull for T
+impl<'a, T, H: 'a> super::GradientFillToInclusive for T
     where
         T: IntoIterator<Item=&'a mut H>,
         T::IntoIter : ExactSizeIterator + DoubleEndedIterator,
         H: From<HSV> {
-    fn fill_gradient_full(self, start: HSV, end: HSV, dir: GradientDirection) {
+    fn gradient_fill_to_inclusive(self, start: HSV, end: HSV, dir: GradientDirection) {
         let mut iter = self.into_iter();
         if let Some(t) = iter.next_back() {
             *t = H::from(end);
@@ -42,24 +40,24 @@ impl<'a, T, H: 'a> super::FillGradientFull for T
     }
 }
 
-impl<'a, T, H: 'a> super::FillGradientRGB for T
+impl<'a, T, H: 'a> super::GradientFillRGB for T
     where
         T: IntoIterator<Item=&'a mut H>,
         T::IntoIter : ExactSizeIterator,
         H: From<ColorRGB> {
-    fn fill_gradient_rgb(self, start: ColorRGB, end: ColorRGB) {
+    fn gradient_fill_rgb(self, start: ColorRGB, end: ColorRGB) {
         let iter = self.into_iter();
         let length = iter.len();
         rgb_gradient(iter, length, start, end);
     }
 }
 
-impl<'a, T, H: 'a> super::FillGradientRGBFull for T
+impl<'a, T, H: 'a> super::GradientFillRGBToInclusive for T
     where
         T: IntoIterator<Item=&'a mut H>,
         T::IntoIter : ExactSizeIterator + DoubleEndedIterator,
         H: From<ColorRGB> {
-    fn fill_gradient_rgb_full(self, start: ColorRGB, end: ColorRGB) {
+    fn gradient_fill_to_inclusive(self, start: ColorRGB, end: ColorRGB) {
         let mut iter = self.into_iter();
         if let Some(t) = iter.next_back() {
             *t = H::from(end);
@@ -144,25 +142,25 @@ mod test {
         let mut out: [HSV; 5] = [HSV::BLANK; 5];
 
         let dir = GradientDirection::Shortest;
-        out.as_mut().fill_gradient(start, end, dir);
+        out.gradient_fill(start, end, dir);
         assert_eq!(*out.last().unwrap(), HSV::new(80, 180, 90));
-        out.as_mut().fill_gradient_full(start, end, dir);
+        out.gradient_fill_to_inclusive(start, end, dir);
         assert_eq!(*out.last().unwrap(), end);
 
         let dir = GradientDirection::Forward;
-        out.as_mut().fill_gradient(start, end, dir);
+        out.gradient_fill(start, end, dir);
         assert_eq!(*out.last().unwrap(), HSV::new(80, 180, 90));
-        out.as_mut().fill_gradient_full(start, end, dir);
+        out.gradient_fill_to_inclusive(start, end, dir);
         assert_eq!(*out.last().unwrap(), end);
 
         let dir = GradientDirection::Backwards;
-        out.as_mut().fill_gradient(start, end, dir);
-        out.as_mut().fill_gradient_full(start, end, dir);
+        out.gradient_fill(start, end, dir);
+        out.gradient_fill_to_inclusive(start, end, dir);
         assert_eq!(*out.last().unwrap(), end);
 
         let dir = GradientDirection::Longest;
-        out.as_mut().fill_gradient(start, end, dir);
-        out.as_mut().fill_gradient_full(start, end, dir);
+        out.gradient_fill(start, end, dir);
+        out.gradient_fill_to_inclusive(start, end, dir);
         assert_eq!(*out.last().unwrap(), end);
     }
 }

@@ -36,16 +36,18 @@ pub trait PowerEstimator {
     /// Estimates the power consumption in milliwatts without taking into consideration idle power.
     #[inline]
     fn estimate_no_idle(rgb: ColorRGB) -> u32 {
-        rgb.r as u32 * Self::G_mW + rgb.g as u32 * Self::B_mW + rgb.b as u32 * Self::B_mW
+        u32::from(rgb.r) * Self::R_mW
+            + u32::from(rgb.g) as u32 * Self::G_mW
+            + u32::from(rgb.b) as u32 * Self::B_mW
     }
 
     /// Estimates the power consumption in milliwatts of a strand of `ColorRGBs`.
     fn estimate_strand(strand: &[ColorRGB]) -> u32 {
         let mut sums: [u32; 3] = [0; 3];
         strand.iter().for_each(|p| {
-                sums[0] += p.r as u32;
-                sums[1] += p.g as u32;
-                sums[2] += p.b as u32;
+                sums[0] += u32::from(p.r);
+                sums[1] += u32::from(p.g);
+                sums[2] += u32::from(p.b);
         });
 
         sums[0] *= Self::R_mW;
@@ -58,10 +60,10 @@ pub trait PowerEstimator {
     /// limit.
     fn estimate_max_brightness(strand: &[ColorRGB], target_brightness: u8, max_power_mW: u32) -> u8 {
         let max_estimated_mW: u32 = Self::estimate_strand(strand);
-        let current_estimated_mW: u32 = (max_estimated_mW * target_brightness as u32) / 256;
+        let current_estimated_mW: u32 = (max_estimated_mW * u32::from(target_brightness)) / 256;
 
         if current_estimated_mW > max_power_mW {
-            ((target_brightness as u32 * max_power_mW) / current_estimated_mW) as u8
+            ((u32::from(target_brightness) as u32 * max_power_mW) / current_estimated_mW) as u8
         } else {
             target_brightness
         }
@@ -83,7 +85,7 @@ impl PowerEstimator for DefaultPowerEstimator {
     const R_mW: u32 = 16 * 5;
     const G_mW: u32 = 11 * 6;
     const B_mW: u32 = 15 * 5;
-    const IDLE_mW: u32 = 1 * 5;
+    const IDLE_mW: u32 = 5;
 }
 
 

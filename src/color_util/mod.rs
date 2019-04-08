@@ -1,37 +1,75 @@
+//! Various Functions and traits for colors.
+//!
+//! The majority of these traits are not intended to be implemented by users. Rather, they are
+//! meant for allowing easy ways to fill iterators with color.
+//!
+//! #
+
 pub mod gradient;
 pub mod rainbow;
+pub mod blur;
 
 use crate::{HSV, ColorRGB};
 
-pub trait FillGradient {
-    fn fill_gradient(self, start: HSV, end: HSV, dir: GradientDirection);
+/// Fills an iterable object with a gradient from the `HSV` values `start` to `finish`, exclusive of the
+/// `finish`.
+pub trait GradientFill {
+    fn gradient_fill(self, start: HSV, end: HSV, dir: GradientDirection);
 }
 
-pub trait FillGradientFull {
-    fn fill_gradient_full(self, start: HSV, end: HSV, dir: GradientDirection);
+/// Fills an iterable object with a gradient from the `HSV` values `start` to `finish`, inclusive of the
+/// `finish`.
+pub trait GradientFillToInclusive {
+    fn gradient_fill_to_inclusive(self, start: HSV, end: HSV, dir: GradientDirection);
+}
+
+/// Fills an iterable object with a gradient from the `ColorRGB` values `start` to `finish`, exclusive of the
+/// `finish`.
+pub trait GradientFillRGB {
+    fn gradient_fill_rgb(self, start: ColorRGB, end: ColorRGB);
+}
+
+/// Fills an iterable object with a gradient from the `ColorRGB` values `start` to `finish`, inclusive of the
+/// `finish`.
+pub trait GradientFillRGBToInclusive {
+    fn gradient_fill_to_inclusive(self, start: ColorRGB, end: ColorRGB);
 }
 
 
-pub trait FillGradientRGB {
-    fn fill_gradient_rgb(self, start: ColorRGB, end: ColorRGB);
-}
-
-pub trait FillGradientRGBFull {
-    fn fill_gradient_rgb_full(self, start: ColorRGB, end: ColorRGB);
-}
-
-
-pub trait FillRainbow<C> : Sized {
+/// Fills an iterable object with a rainbow hue of a desired step size.
+///
+/// Step sizes are unsigned integers `u8`, `u16`, or `u32`. The Most significant byte of
+/// each integer is used to represent the full number of hues to increment between each iterated
+/// value, while the other bytes (if present) are added as a fractional component.
+pub trait RainbowFill<C> : Sized {
+    /// Fills an object with a rainbow gradient hue of a desired step size and from a desired
+    /// starting hue.
     #[inline(always)]
-    fn fill_rainbow(self, start_hue: u8, hue_delta: C) {
-        self.fill_rainbow_with_sat_val(start_hue, hue_delta, 255, 255);
+    fn rainbow_fill(self, start_hue: u8, hue_delta: C) {
+        self.rainbow_fill_with_sat_val(start_hue, hue_delta, 255, 255);
     }
 
-    fn fill_rainbow_with_sat_val(self, start_hue: u8, hue_delta: C, sat: u8, val: u8);
+    /// Fills an object with a rainbow gradient hue of a desired step size and from a desired
+    /// starting hue and constant additional saturation and value (components of a HSV).
+    fn rainbow_fill_with_sat_val(self, start_hue: u8, hue_delta: C, sat: u8, val: u8);
 }
 
-pub trait FillSingularRainbow {
-    fn fill_singular_rainbow(self, start_hue: u8);
+/// Fills an iterable object with a single complete rainbow.
+///
+/// If the the rainbow is needed backwards, try calling `iter.rev()` before calling this
+/// method.
+pub trait RainbowFillSingleCycle {
+    fn rainbow_fill_single_cycle(self, start_hue: u8);
+}
+
+/// Blurs colors by `blur_amount`.
+///
+/// A lower `blur_amount` means a less extreme blur. For example, a `blur_amount` of 64
+/// is a moderate blur, while past 171 the blur is somewhat flickery.
+///
+/// This method does not retain brightness. Blurring will slowly fade all the colors to black.
+pub trait Blur {
+    fn blur(self, blur_amount: u8);
 }
 
 /// Possible Directions around the color wheel a hue can go.
@@ -95,11 +133,11 @@ impl GradientDirection {
     fn into_hue_distance(self, start_hue: u8, end_hue: u8) -> i16 {
         let hue_diff: u8 = end_hue.wrapping_sub(start_hue);
         match self.into_hue_direction(hue_diff) {
-            HueDirection::Forward => (hue_diff as i16) << 7,
+            HueDirection::Forward => i16::from(hue_diff) << 7,
             HueDirection::Backwards => {
-                let hue_diff: u8 = (256u16).wrapping_sub(hue_diff as u16) as u8;
-                let hue_diff: i16 = (hue_diff as i16) << 7;
-                hue_diff * -1
+                let hue_diff: u8 = (256u16).wrapping_sub(u16::from(hue_diff)) as u8;
+                let hue_diff: i16 = i16::from(hue_diff) << 7;
+                -hue_diff
             }
         }
     }
