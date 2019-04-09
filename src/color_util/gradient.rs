@@ -1,6 +1,6 @@
 //! Color gradient functions and impls.
 //!
-//! Create's smooth transitions between any two colors for any number of steps.
+//! Creates smooth transitions between any two colors for any number of steps.
 
 #[cfg(feature = "no-std")]
 use core::iter::ExactSizeIterator;

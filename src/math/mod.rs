@@ -3,6 +3,7 @@ pub(crate) mod lerp;
 pub mod scale;
 pub mod trig;
 
+/// Blends two u8's together by the fraction `amount_of_b`.
 #[inline]
 pub fn blend(a: u8, b: u8, amount_of_b: u8) -> u8 {
     let amount_of_a: u16 = u16::from(255 - amount_of_b);

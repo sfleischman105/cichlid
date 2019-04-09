@@ -1,3 +1,5 @@
+//! Rainbow gradient impls.
+
 use crate::HSV;
 
 impl<'a, T, H: 'a> super::RainbowFill<u8> for T

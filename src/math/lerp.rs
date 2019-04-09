@@ -1,3 +1,5 @@
+//! Linear Interpolation functions and structures.
+
 #[cfg(feature = "no-std")]
 use core::mem::transmute;
 #[cfg(not(feature = "no-std"))]

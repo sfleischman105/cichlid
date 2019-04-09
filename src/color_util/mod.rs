@@ -2,8 +2,6 @@
 //!
 //! The majority of these traits are not intended to be implemented by users. Rather, they are
 //! meant for allowing easy ways to fill iterators with color.
-//!
-//! #
 
 pub mod blur;
 pub mod gradient;

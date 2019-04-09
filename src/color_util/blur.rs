@@ -1,3 +1,5 @@
+//! Blurring impls.
+
 use crate::ColorRGB;
 
 impl<'a, T> super::Blur for T

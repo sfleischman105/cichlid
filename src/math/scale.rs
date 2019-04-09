@@ -7,7 +7,17 @@
 /// Scales one byte (`i`) by a second one (`scale`), which is treated as the numerator
 /// of a fraction whose denominator is `256`.
 ///
-/// In other words, it computes 'i * (scale / 256)'
+/// In other words, it computes `i * (scale / 256)`
+///
+/// # Example
+///
+/// ```
+/// use cichlid::math::scale::scale8;
+///
+/// assert_eq!(scale8(100, 255), 100); // 100 * 1.0
+/// assert_eq!(scale8(100, 0), 0); // 100 * 0.0
+/// assert_eq!(scale8(100, 255 / 2), 50); // 100 * 0.5
+/// ```
 #[inline(always)]
 pub const fn scale8(i: u8, scale: u8) -> u8 {
     (((i as u16) * (1u16 + scale as u16)) >> 8) as u8
@@ -20,6 +30,15 @@ pub const fn scale8(i: u8, scale: u8) -> u8 {
 /// to be non-zero.
 ///
 /// This makes for better 'video'/LED dimming, at the cost of several additional cycles.
+///
+/// # Example
+///
+/// ```
+/// use cichlid::math::scale::{scale8_video, scale8};
+///
+/// assert_eq!(scale8_video(100, 255), scale8(100, 255)); // same as scale8...
+/// assert_ne!(scale8_video(1, 1),  scale8(1, 1));  // Except scale8() == 0
+/// ```
 #[inline]
 pub const fn scale8_video(i: u8, scale: u8) -> u8 {
     let x: u8 = (((i as u16) * (scale as u16)) >> 8) as u8;
@@ -30,6 +49,17 @@ pub const fn scale8_video(i: u8, scale: u8) -> u8 {
 }
 
 /// In place version of `scale8`.
+///
+/// # Example
+///
+/// ```
+/// use cichlid::math::scale::nscale8;
+///
+/// let mut n: u8 = 100;
+/// let frac: u8 = 255 / 2;
+/// nscale8(&mut n, frac);
+/// assert_eq!(n, 50); // same as scale8, but in place
+/// ```
 #[inline(always)]
 pub fn nscale8(int: &mut u8, scale: u8) {
     *int = scale8(*int, scale);
@@ -67,8 +97,20 @@ pub fn nscale8x4(int_1: &mut u8, int_2: &mut u8, int_3: &mut u8, int_4: &mut u8,
 /// The eye does not respond in a linear way to light. High speed PWM'd LEDs at 50% duty cycle
 /// appear far brighter then the 'half as bright' you might expect.
 ///
-/// If you want your midpoint brightness leve (128) to appear half as bright as 'full' brightness
+/// If you want your midpoint brightness level (128) to appear half as bright as 'full' brightness
 /// (255), you have to apply a dimming function.
+///
+/// # Example
+///
+/// ```
+/// use cichlid::math::scale::dim8_raw;
+///
+/// let full_brightness: u8 = 255;
+/// assert_eq!(255, dim8_raw(full_brightness));
+///
+/// let half_brightness: u8 = full_brightness / 2;
+/// assert_eq!(63, dim8_raw(half_brightness));
+/// ```
 #[inline(always)]
 pub const fn dim8_raw(x: u8) -> u8 {
     scale8(x, x)
@@ -78,14 +120,24 @@ pub const fn dim8_raw(x: u8) -> u8 {
 ///
 /// This is the same as `dim8_raw`, but the output of this function will only be zero if the
 /// parameter byte is zero.
+///
+/// # Example
+///
+/// ```
+/// use cichlid::math::scale::{dim8_raw,dim8_video};
+///
+/// assert_eq!(dim8_raw(255), dim8_video(255));
+/// assert_ne!(dim8_raw(30), dim8_video(30));
+/// ```
 #[inline(always)]
 pub const fn dim8_video(x: u8) -> u8 {
     scale8_video(x, x)
 }
 
-/// Dims a byte in linearly
+/// Dims a byte in linearly.
 ///
-/// This is the same as `dim8_raw`, but when `x < 128`, the value is simply halved.
+/// This is the same as `dim8_raw`, but when `x < 128`, the value is simply halved. The output
+/// will only be zero if the input is zero.
 #[inline]
 pub fn dim8_lin(mut x: u8) -> u8 {
     if (x & 0x80) != 0 {
@@ -119,8 +171,6 @@ pub fn brighten8_lin(x: u8) -> u8 {
     let ix = 255 - x;
     255 - dim8_lin(ix)
 }
-
-// 16 bit
 
 #[inline(always)]
 pub const fn scale16(i: u16, scale: u16) -> u16 {
