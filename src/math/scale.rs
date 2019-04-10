@@ -172,11 +172,13 @@ pub fn brighten8_lin(x: u8) -> u8 {
     255 - dim8_lin(ix)
 }
 
+/// Scales a two byte integer by another two byte integer.
 #[inline(always)]
 pub const fn scale16(i: u16, scale: u16) -> u16 {
     (((i as u32) * (1u32 + scale as u32)) >> 16) as u16
 }
 
+/// Scales a two byte integer by a single byte integer.
 #[inline(always)]
 pub const fn scale16by8(i: u16, scale: u8) -> u16 {
     ((i as u32 * (1u32 + scale as u32)) >> 8) as u16
