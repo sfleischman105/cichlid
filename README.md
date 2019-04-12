@@ -1,5 +1,7 @@
 ### Cichlid
 
+[![cichlid crate](https://img.shields.io/crates/v/cichlid.svg)](https://crates.io/crates/cichlid)
+
 A simple Rust library for managing RGB colorings. Works with `no-std` environments as well.
 
 Currently this library is geared toward use in embedded systems, but does contain useful
