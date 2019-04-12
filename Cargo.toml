@@ -39,6 +39,6 @@ codegen-units = 1
 incremental = false
 overflow-checks = false
 
-[[bench]]
-name = "bench"
-harness = false
+#[[bench]]
+#name = "bench"
+#harness = false

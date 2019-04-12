@@ -89,9 +89,7 @@ impl HSV {
 
     /// Converts hue, saturation, and value to a `ColorRGB` using a visually balanced rainbow.
     pub fn to_rgb_rainbow(self) -> ColorRGB {
-        let hue: u8 = self.h;
-        let sat: u8 = self.s;
-        let val: u8 = self.v;
+        let (hue, sat, val)= (self.h, self.s, self.v);
 
         if sat == 0 {
             return ColorRGB::new(255, 255, 255);
@@ -102,7 +100,6 @@ impl HSV {
         let mut rgb: ColorRGB = hue_to_full_rgb(hue);
 
         if sat != 255 {
-            // Already checked for sat == 0;
             rgb.modify_all(|c| scale8(c, sat));
             let desat = 255 - sat;
             let brightness_floor = scale8(desat, desat);
@@ -110,7 +107,6 @@ impl HSV {
         }
 
         if val != 255 {
-            // Already checked for val == 0
             rgb.modify_all(|c| scale8(c, val));
         }
 

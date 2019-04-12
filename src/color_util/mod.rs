@@ -10,7 +10,7 @@ pub mod rainbow;
 use crate::{ColorRGB, HSV};
 
 
-pub trait ColorIterUtil {
+pub trait ColorIterUtil: Sized {
     fn set_color(self, color: ColorRGB);
 
     fn clear(self) {
