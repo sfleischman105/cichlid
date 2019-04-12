@@ -12,7 +12,7 @@ use crate::{ColorRGB, HSV};
 pub trait ColorIterMut: Sized {
     fn fill(self, color: ColorRGB);
 
-    /// Sets all colors to Black.
+    /// Sets all colors to black.
     #[inline]
     fn clear(self) {
         self.fill(RGB!(0, 0, 0));
@@ -86,10 +86,7 @@ pub trait RainbowFillSingleCycle {
     fn rainbow_fill_single_cycle(self, start_hue: u8);
 }
 
-impl<'a, T> ColorIterMut for T
-    where
-        T: Sized + IntoIterator<Item = &'a mut ColorRGB>,
-{
+impl<'a, T: Sized + IntoIterator<Item = &'a mut ColorRGB>> ColorIterMut for T {
     fn fill(self, color: ColorRGB) {
         self.into_iter().for_each(|p| *p = color);
     }

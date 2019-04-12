@@ -24,13 +24,20 @@
 //!
 //! # `no-std`
 //!
-//! To use in a `no-std` enviorment, simply add the following to your project's `cargo.toml`:
+//! To use in a `no-std` environment, simply add the following to your project's `cargo.toml`:
 //!
 //! ```ignore
 //! [dependencies.cichlid]
 //! version = "*"
 //! features = ["no-std"]
 //! ```
+//!
+//! # Feature flags
+//!
+//! The `low-mem` feature creates a binary that is smaller due to relying less on in memory
+//! tables, preferring direct computation instead.
+//!
+//! The only drawback of this is a slight speed decrease.
 //!
 //! # Acknowledgements
 //!
