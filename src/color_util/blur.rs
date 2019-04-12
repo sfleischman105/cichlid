@@ -53,4 +53,13 @@ mod test {
             println!("{:?}", arr);
         }
     }
+
+    #[test]
+    fn blur_test_long() {
+        let mut arr = [ColorRGB::BlueViolet; 256];
+
+        for _ in 0..4 {
+            arr.blur(64);
+        }
+    }
 }

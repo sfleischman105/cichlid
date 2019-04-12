@@ -2,11 +2,6 @@
 //!
 //! Credit for most of these functions goes to the authors of the FastLED library.
 
-#[cfg(feature = "no-std")]
-use core::mem::transmute;
-#[cfg(not(feature = "no-std"))]
-use std::mem::transmute;
-
 /// Returns the sine of a two byte integer.
 pub fn sin16(theta: u16) -> i16 {
     static BASE: [u16; 8] = [0, 6393, 12539, 18204, 23170, 27245, 30273, 32137];
@@ -48,7 +43,11 @@ pub fn cos8(theta: u8) -> u8 {
 
 #[cfg(feature = "low-mem")]
 mod trig_inner {
-    use super::transmute;
+    #[cfg(feature = "no-std")]
+    use core::mem::transmute;
+    #[cfg(not(feature = "no-std"))]
+    use std::mem::transmute;
+
     static B_M16_INTERLEAVE: [u8; 8] = [0, 49, 49, 41, 90, 27, 117, 10];
 
     #[inline(never)]

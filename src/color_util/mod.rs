@@ -15,11 +15,16 @@ trait ColorIter: Sized {
 }
 
 trait ColorIterMut: ColorIter {
-    fn set_color(self, color: ColorRGB);
+    fn fill_with(self, color: ColorRGB);
 
+    #[inline]
     fn clear(self) {
-        self.set_color(RGB!(0, 0, 0));
+        self.fill_with(RGB!(0, 0, 0));
     }
+
+    fn blur(self, blur_amount: u8);
+
+    fn fade_to_black(fade_by: u8);
 }
 
 

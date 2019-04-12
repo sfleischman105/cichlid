@@ -28,7 +28,7 @@ pub trait PowerEstimator {
     const IDLE_mW: u32;
 
     /// Estimates the power consumption in milliwatts.
-    #[inline]
+    #[inline(always)]
     fn estimate(rgb: ColorRGB) -> u32 {
         Self::IDLE_mW + Self::estimate_no_idle(rgb)
     }
@@ -37,23 +37,20 @@ pub trait PowerEstimator {
     #[inline]
     fn estimate_no_idle(rgb: ColorRGB) -> u32 {
         u32::from(rgb.r) * Self::R_mW
-            + u32::from(rgb.g) as u32 * Self::G_mW
-            + u32::from(rgb.b) as u32 * Self::B_mW
+            + u32::from(rgb.g) * Self::G_mW
+            + u32::from(rgb.b) * Self::B_mW
     }
 
     /// Estimates the power consumption in milliwatts of a strand of `ColorRGBs`.
     fn estimate_strand(strand: &[ColorRGB]) -> u32 {
-        let mut sums: [u32; 3] = [0; 3];
-        strand.iter().for_each(|p| {
-            sums[0] += u32::from(p.r);
-            sums[1] += u32::from(p.g);
-            sums[2] += u32::from(p.b);
-        });
+        let mut sums = strand.iter()
+            .map(|p| (u32::from(p.r), u32::from(p.g), u32::from(p.b)))
+            .fold((0,0,0), |acc, x| (acc.0 + x.0, acc.1 + acc.1, acc.2 + x.2));
 
-        sums[0] *= Self::R_mW;
-        sums[1] *= Self::G_mW;
-        sums[2] *= Self::B_mW;
-        sums.iter().sum::<u32>() + (strand.len() as u32 * Self::IDLE_mW)
+        sums.0 *= Self::R_mW;
+        sums.1 *= Self::G_mW;
+        sums.2 *= Self::B_mW;
+        sums.0 + sums.1 + sums.2 + (strand.len() as u32 * Self::IDLE_mW)
     }
 
     /// Estimates the maximum brightness a strand of pixels can push from a given milli-Watt power

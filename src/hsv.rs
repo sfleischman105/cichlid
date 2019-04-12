@@ -1,11 +1,6 @@
 //! Contains the HSV (hue, saturation, value) representation of a color.
 
 #[cfg(feature = "no-std")]
-use core::hint::unreachable_unchecked;
-#[cfg(not(feature = "no-std"))]
-use std::hint::unreachable_unchecked;
-
-#[cfg(feature = "no-std")]
 use core::fmt;
 #[cfg(not(feature = "no-std"))]
 use std::fmt;
@@ -18,7 +13,7 @@ const HSV_SECTION_3: u8 = 0x40;
 /// Converts hue to RGB at full brightness and full saturation.
 #[inline(always)]
 pub fn hue_to_full_rgb(hue: u8) -> ColorRGB {
-    hsv_inner::hue2rgb(hue)
+    hsv_inner::hue2rgb_rainbow(hue)
 }
 
 /// Represents a color encoded in {hue, saturation, value} format.
@@ -30,6 +25,15 @@ pub struct HSV {
 }
 
 impl HSV {
+    /// Blank `HSV` object where all values are initialized to zero.
+    pub const BLANK: HSV = HSV { h: 0, s: 0, v: 0 };
+
+    /// Create a new `HSV` object.
+    #[inline(always)]
+    pub const fn new(h: u8, s: u8, v: u8) -> Self {
+        HSV { h, s, v }
+    }
+
     /// Grabs the hue component of the `HSV`.
     #[inline(always)]
     pub fn h(self) -> u8 {
@@ -48,17 +52,17 @@ impl HSV {
     /// Grabs the hue component of the `HSV`.
     #[inline(always)]
     pub fn hue(self) -> u8 {
-        self.h()
+        self.h
     }
     /// Grabs the saturation component of the `HSV`.
     #[inline(always)]
     pub fn saturation(self) -> u8 {
-        self.s()
+        self.s
     }
     /// Grabs the value component of the `HSV`.
     #[inline(always)]
     pub fn value(self) -> u8 {
-        self.v()
+        self.v
     }
     /// Sets the hue component of the `HSV`.
     #[inline(always)]
@@ -74,17 +78,6 @@ impl HSV {
     #[inline(always)]
     pub fn set_value(&mut self, v: u8) {
         self.v = v;
-    }
-}
-
-impl HSV {
-    /// Blank `HSV` object where all values are initialized to zero.
-    pub const BLANK: HSV = HSV { h: 0, s: 0, v: 0 };
-
-    /// Create a new `HSV` object.
-    #[inline(always)]
-    pub const fn new(h: u8, s: u8, v: u8) -> Self {
-        HSV { h, s, v }
     }
 
     /// Converts hue, saturation, and value to a `ColorRGB` using a visually balanced rainbow.
@@ -113,16 +106,21 @@ impl HSV {
         rgb
     }
 
-    // Mathematical rainbow
-    fn to_rgb_spectrum(self) -> ColorRGB {
+    /// Converts a `HSV` to a `ColorRGB` using a traditional Mathematical rainbow.
+    pub fn to_rgb_spectrum(self) -> ColorRGB {
         let mut hsv = self;
-        hsv.h = scale8(hsv.h, 191);
+        hsv.v = scale8(hsv.v, 191);
         unsafe { hsv.to_rgb_raw() }
     }
 
-    // TODO: Test this!
-    // Value can only be up to 191
-    unsafe fn to_rgb_raw(self) -> ColorRGB {
+    /// Converts a `HSV` to a `ColorRGB` using a traditional Mathematical rainbow.
+    ///
+    /// # Safety
+    ///
+    /// Value can only be up to 191, or else undefined behavior will follow.
+    pub unsafe fn to_rgb_raw(self) -> ColorRGB {
+        // Taken directly from FastLED, credit goes to them for this
+        debug_assert!(self.v <= 191);
         let value: u8 = self.v;
         let saturation: u8 = self.s;
         // The brightness floor is minimum number that all of
@@ -130,10 +128,9 @@ impl HSV {
         let invsat: u8 = 255 - saturation;
         let brightness_floor: u8 = ((u16::from(value) * u16::from(invsat)) / 256) as u8;
 
-        // The color amplitude is the maximum amount of R, G, and B
-        // that will be added on top of the brightness_floor to
-        // create the specific hue desired.
-        let color_amplitude: u8 = value - brightness_floor;
+        // The color amplitude is the maximum amount of R, G, and B that will be added on
+        // top of the brightness_floor to create the specific hue desired.
+        let color_amp: u8 = value - brightness_floor;
 
         // Figure out which section of the hue wheel we're in,
         // and how far offset we are withing that section
@@ -143,10 +140,8 @@ impl HSV {
         let rampdown: u8 = (HSV_SECTION_3 - 1) - offset; // 63..0
 
         // compute color-amplitude-scaled-down versions of rampup and rampdown
-        let rampup_amp_adj: u8 =
-            ((u16::from(rampup) * u16::from(color_amplitude)) / (256u16 / 4)) as u8;
-        let rampdown_amp_adj: u8 =
-            ((u16::from(rampdown) * u16::from(color_amplitude)) / (256u16 / 4)) as u8;
+        let rampup_amp_adj: u8 = ((u16::from(rampup) * u16::from(color_amp)) / (256u16 / 4)) as u8;
+        let rampdown_amp_adj: u8 = ((u16::from(rampdown) * u16::from(color_amp)) / (256u16 / 4)) as u8;
 
         // add brightness_floor offset to everything
         let rampup_adj_with_floor: u8 = rampup_amp_adj + brightness_floor;
@@ -155,7 +150,7 @@ impl HSV {
         match section {
             0 => RGB!(brightness_floor, rampdown_adj_with_floor, rampup_adj_with_floor),
             1 => RGB!(rampup_adj_with_floor, brightness_floor, rampdown_adj_with_floor),
-            _ => RGB!(rampdown_adj_with_floor, rampup_adj_with_floor, brightness_floor)
+            _ => RGB!(rampdown_adj_with_floor, rampup_adj_with_floor, brightness_floor),
         }
     }
 
@@ -170,9 +165,12 @@ impl HSV {
 mod hsv_inner {
     use crate::ColorRGB;
     use crate::math::scale::scale8;
-    use super::unreachable_unchecked;
+    #[cfg(feature = "no-std")]
+    use core::hint::unreachable_unchecked;
+    #[cfg(not(feature = "no-std"))]
+    use std::hint::unreachable_unchecked;
 
-    pub fn hue2rgb(hue: u8) -> ColorRGB {
+    pub fn hue2rgb_rainbow(hue: u8) -> ColorRGB {
         let offset: u8 = hue & 0x1F;
         let offset8 = offset << 3;
 
@@ -204,7 +202,7 @@ mod hsv_inner {
     use crate::ColorRGB;
 
     #[inline(always)]
-    pub fn hue2rgb(hue: u8) -> ColorRGB {
+    pub fn hue2rgb_rainbow(hue: u8) -> ColorRGB {
         HSV_2_RGB_RAINBOW[hue as usize]
     }
 
@@ -319,6 +317,18 @@ mod test {
         for h in (0..=255).step_by(1) {
             let hsv = HSV::new(h as u8, 255, 255);
             let rgb: ColorRGB = ColorRGB::from(hsv);
+        }
+    }
+
+    #[test]
+    fn hsv2rgb_raw_256h() {
+        for h in (0..=255).step_by(1) {
+            for s in (0..=255).step_by(15) {
+                for v in (0..=255).step_by(15) {
+                    let hsv = HSV::new(h as u8, s as u8, v as u8);
+                    let _rgb: ColorRGB = hsv.to_rgb_spectrum();
+                }
+            }
         }
     }
 
