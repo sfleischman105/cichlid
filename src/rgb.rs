@@ -25,6 +25,7 @@ use crate::math::blend;
 use crate::math::scale::*;
 use crate::power_mgmt::PowerEstimator;
 use crate::HSV;
+use crate::color_codes::*;
 
 //pub trait RGBOrder {
 //    const FIRST: usize;
@@ -500,178 +501,154 @@ impl Rem<u8> for ColorRGB {
 }
 
 // Color codes
-
 #[allow(non_upper_case_globals)]
 impl ColorRGB {
-    pub const AliceBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::AliceBlue);
-    pub const Amethyst: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Amethyst);
-    pub const AntiqueWhite: ColorRGB = ColorRGB::from_color_code(crate::color_codes::AntiqueWhite);
-    pub const Aqua: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Aqua);
-    pub const Aquamarine: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Aquamarine);
-    pub const Azure: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Azure);
-    pub const Beige: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Beige);
-    pub const Bisque: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Bisque);
-    pub const Black: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Black);
-    pub const BlanchedAlmond: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::BlanchedAlmond);
-    pub const Blue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Blue);
-    pub const BlueViolet: ColorRGB = ColorRGB::from_color_code(crate::color_codes::BlueViolet);
-    pub const Brown: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Brown);
-    pub const BurlyWood: ColorRGB = ColorRGB::from_color_code(crate::color_codes::BurlyWood);
-    pub const CadetBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::CadetBlue);
-    pub const Chartreuse: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Chartreuse);
-    pub const Chocolate: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Chocolate);
-    pub const Coral: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Coral);
-    pub const CornflowerBlue: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::CornflowerBlue);
-    pub const Cornsilk: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Cornsilk);
-    pub const Crimson: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Crimson);
-    pub const Cyan: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Cyan);
-    pub const DarkBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkBlue);
-    pub const DarkCyan: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkCyan);
-    pub const DarkGoldenrod: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::DarkGoldenrod);
-    pub const DarkGray: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkGray);
-    pub const DarkGrey: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkGrey);
-    pub const DarkGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkGreen);
-    pub const DarkKhaki: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkKhaki);
-    pub const DarkMagenta: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkMagenta);
-    pub const DarkOliveGreen: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::DarkOliveGreen);
-    pub const DarkOrange: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkOrange);
-    pub const DarkOrchid: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkOrchid);
-    pub const DarkRed: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkRed);
-    pub const DarkSalmon: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkSalmon);
-    pub const DarkSeaGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkSeaGreen);
-    pub const DarkSlateBlue: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::DarkSlateBlue);
-    pub const DarkSlateGray: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::DarkSlateGray);
-    pub const DarkSlateGrey: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::DarkSlateGrey);
-    pub const DarkTurquoise: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::DarkTurquoise);
-    pub const DarkViolet: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DarkViolet);
-    pub const DeepPink: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DeepPink);
-    pub const DeepSkyBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DeepSkyBlue);
-    pub const DimGray: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DimGray);
-    pub const DimGrey: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DimGrey);
-    pub const DodgerBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::DodgerBlue);
-    pub const FireBrick: ColorRGB = ColorRGB::from_color_code(crate::color_codes::FireBrick);
-    pub const FloralWhite: ColorRGB = ColorRGB::from_color_code(crate::color_codes::FloralWhite);
-    pub const ForestGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::ForestGreen);
-    pub const Fuchsia: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Fuchsia);
-    pub const Gainsboro: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Gainsboro);
-    pub const GhostWhite: ColorRGB = ColorRGB::from_color_code(crate::color_codes::GhostWhite);
-    pub const Gold: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Gold);
-    pub const Goldenrod: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Goldenrod);
-    pub const Gray: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Gray);
-    pub const Grey: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Grey);
-    pub const Green: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Green);
-    pub const GreenYellow: ColorRGB = ColorRGB::from_color_code(crate::color_codes::GreenYellow);
-    pub const Honeydew: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Honeydew);
-    pub const HotPink: ColorRGB = ColorRGB::from_color_code(crate::color_codes::HotPink);
-    pub const IndianRed: ColorRGB = ColorRGB::from_color_code(crate::color_codes::IndianRed);
-    pub const Indigo: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Indigo);
-    pub const Ivory: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Ivory);
-    pub const Khaki: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Khaki);
-    pub const Lavender: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Lavender);
-    pub const LavenderBlush: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::LavenderBlush);
-    pub const LawnGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LawnGreen);
-    pub const LemonChiffon: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LemonChiffon);
-    pub const LightBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightBlue);
-    pub const LightCoral: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightCoral);
-    pub const LightCyan: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightCyan);
-    pub const LightGoldenrodYellow: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::LightGoldenrodYellow);
-    pub const LightGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightGreen);
-    pub const LightGrey: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightGrey);
-    pub const LightPink: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightPink);
-    pub const LightSalmon: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightSalmon);
-    pub const LightSeaGreen: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::LightSeaGreen);
-    pub const LightSkyBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightSkyBlue);
-    pub const LightSlateGray: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::LightSlateGray);
-    pub const LightSlateGrey: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::LightSlateGrey);
-    pub const LightSteelBlue: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::LightSteelBlue);
-    pub const LightYellow: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LightYellow);
-    pub const Lime: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Lime);
-    pub const LimeGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::LimeGreen);
-    pub const Linen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Linen);
-    pub const Magenta: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Magenta);
-    pub const Maroon: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Maroon);
-    pub const MediumAquamarine: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::MediumAquamarine);
-    pub const MediumBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MediumBlue);
-    pub const MediumOrchid: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MediumOrchid);
-    pub const MediumPurple: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MediumPurple);
-    pub const MediumSeaGreen: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::MediumSeaGreen);
-    pub const MediumSlateBlue: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::MediumSlateBlue);
-    pub const MediumSpringGreen: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::MediumSpringGreen);
-    pub const MediumTurquoise: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::MediumTurquoise);
-    pub const MediumVioletRed: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::MediumVioletRed);
-    pub const MidnightBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MidnightBlue);
-    pub const MintCream: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MintCream);
-    pub const MistyRose: ColorRGB = ColorRGB::from_color_code(crate::color_codes::MistyRose);
-    pub const Moccasin: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Moccasin);
-    pub const NavajoWhite: ColorRGB = ColorRGB::from_color_code(crate::color_codes::NavajoWhite);
-    pub const Navy: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Navy);
-    pub const OldLace: ColorRGB = ColorRGB::from_color_code(crate::color_codes::OldLace);
-    pub const Olive: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Olive);
-    pub const OliveDrab: ColorRGB = ColorRGB::from_color_code(crate::color_codes::OliveDrab);
-    pub const Orange: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Orange);
-    pub const OrangeRed: ColorRGB = ColorRGB::from_color_code(crate::color_codes::OrangeRed);
-    pub const Orchid: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Orchid);
-    pub const PaleGoldenrod: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::PaleGoldenrod);
-    pub const PaleGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::PaleGreen);
-    pub const PaleTurquoise: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::PaleTurquoise);
-    pub const PaleVioletRed: ColorRGB =
-        ColorRGB::from_color_code(crate::color_codes::PaleVioletRed);
-    pub const PapayaWhip: ColorRGB = ColorRGB::from_color_code(crate::color_codes::PapayaWhip);
-    pub const PeachPuff: ColorRGB = ColorRGB::from_color_code(crate::color_codes::PeachPuff);
-    pub const Peru: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Peru);
-    pub const Pink: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Pink);
-    pub const Plaid: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Plaid);
-    pub const Plum: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Plum);
-    pub const PowderBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::PowderBlue);
-    pub const Purple: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Purple);
-    pub const Red: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Red);
-    pub const RosyBrown: ColorRGB = ColorRGB::from_color_code(crate::color_codes::RosyBrown);
-    pub const RoyalBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::RoyalBlue);
-    pub const SaddleBrown: ColorRGB = ColorRGB::from_color_code(crate::color_codes::SaddleBrown);
-    pub const Salmon: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Salmon);
-    pub const SandyBrown: ColorRGB = ColorRGB::from_color_code(crate::color_codes::SandyBrown);
-    pub const SeaGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::SeaGreen);
-    pub const Seashell: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Seashell);
-    pub const Sienna: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Sienna);
-    pub const Silver: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Silver);
-    pub const SkyBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::SkyBlue);
-    pub const SlateBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::SlateBlue);
-    pub const SlateGray: ColorRGB = ColorRGB::from_color_code(crate::color_codes::SlateGray);
-    pub const SlateGrey: ColorRGB = ColorRGB::from_color_code(crate::color_codes::SlateGrey);
-    pub const Snow: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Snow);
-    pub const SpringGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::SpringGreen);
-    pub const SteelBlue: ColorRGB = ColorRGB::from_color_code(crate::color_codes::SteelBlue);
-    pub const Tan: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Tan);
-    pub const Teal: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Teal);
-    pub const Thistle: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Thistle);
-    pub const Tomato: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Tomato);
-    pub const Turquoise: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Turquoise);
-    pub const Violet: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Violet);
-    pub const Wheat: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Wheat);
-    pub const White: ColorRGB = ColorRGB::from_color_code(crate::color_codes::White);
-    pub const WhiteSmoke: ColorRGB = ColorRGB::from_color_code(crate::color_codes::WhiteSmoke);
-    pub const Yellow: ColorRGB = ColorRGB::from_color_code(crate::color_codes::Yellow);
-    pub const YellowGreen: ColorRGB = ColorRGB::from_color_code(crate::color_codes::YellowGreen);
+    pub const AliceBlue: ColorRGB = ColorRGB::from_color_code(AliceBlue);
+    pub const Amethyst: ColorRGB = ColorRGB::from_color_code(Amethyst);
+    pub const AntiqueWhite: ColorRGB = ColorRGB::from_color_code(AntiqueWhite);
+    pub const Aqua: ColorRGB = ColorRGB::from_color_code(Aqua);
+    pub const Aquamarine: ColorRGB = ColorRGB::from_color_code(Aquamarine);
+    pub const Azure: ColorRGB = ColorRGB::from_color_code(Azure);
+    pub const Beige: ColorRGB = ColorRGB::from_color_code(Beige);
+    pub const Bisque: ColorRGB = ColorRGB::from_color_code(Bisque);
+    pub const Black: ColorRGB = ColorRGB::from_color_code(Black);
+    pub const BlanchedAlmond: ColorRGB = ColorRGB::from_color_code(BlanchedAlmond);
+    pub const Blue: ColorRGB = ColorRGB::from_color_code(Blue);
+    pub const BlueViolet: ColorRGB = ColorRGB::from_color_code(BlueViolet);
+    pub const Brown: ColorRGB = ColorRGB::from_color_code(Brown);
+    pub const BurlyWood: ColorRGB = ColorRGB::from_color_code(BurlyWood);
+    pub const CadetBlue: ColorRGB = ColorRGB::from_color_code(CadetBlue);
+    pub const Chartreuse: ColorRGB = ColorRGB::from_color_code(Chartreuse);
+    pub const Chocolate: ColorRGB = ColorRGB::from_color_code(Chocolate);
+    pub const Coral: ColorRGB = ColorRGB::from_color_code(Coral);
+    pub const CornflowerBlue: ColorRGB = ColorRGB::from_color_code(CornflowerBlue);
+    pub const Cornsilk: ColorRGB = ColorRGB::from_color_code(Cornsilk);
+    pub const Crimson: ColorRGB = ColorRGB::from_color_code(Crimson);
+    pub const Cyan: ColorRGB = ColorRGB::from_color_code(Cyan);
+    pub const DarkBlue: ColorRGB = ColorRGB::from_color_code(DarkBlue);
+    pub const DarkCyan: ColorRGB = ColorRGB::from_color_code(DarkCyan);
+    pub const DarkGoldenrod: ColorRGB = ColorRGB::from_color_code(DarkGoldenrod);
+    pub const DarkGray: ColorRGB = ColorRGB::from_color_code(DarkGray);
+    pub const DarkGrey: ColorRGB = ColorRGB::from_color_code(DarkGrey);
+    pub const DarkGreen: ColorRGB = ColorRGB::from_color_code(DarkGreen);
+    pub const DarkKhaki: ColorRGB = ColorRGB::from_color_code(DarkKhaki);
+    pub const DarkMagenta: ColorRGB = ColorRGB::from_color_code(DarkMagenta);
+    pub const DarkOliveGreen: ColorRGB = ColorRGB::from_color_code(DarkOliveGreen);
+    pub const DarkOrange: ColorRGB = ColorRGB::from_color_code(DarkOrange);
+    pub const DarkOrchid: ColorRGB = ColorRGB::from_color_code(DarkOrchid);
+    pub const DarkRed: ColorRGB = ColorRGB::from_color_code(DarkRed);
+    pub const DarkSalmon: ColorRGB = ColorRGB::from_color_code(DarkSalmon);
+    pub const DarkSeaGreen: ColorRGB = ColorRGB::from_color_code(DarkSeaGreen);
+    pub const DarkSlateBlue: ColorRGB = ColorRGB::from_color_code(DarkSlateBlue);
+    pub const DarkSlateGray: ColorRGB = ColorRGB::from_color_code(DarkSlateGray);
+    pub const DarkSlateGrey: ColorRGB = ColorRGB::from_color_code(DarkSlateGrey);
+    pub const DarkTurquoise: ColorRGB = ColorRGB::from_color_code(DarkTurquoise);
+    pub const DarkViolet: ColorRGB = ColorRGB::from_color_code(DarkViolet);
+    pub const DeepPink: ColorRGB = ColorRGB::from_color_code(DeepPink);
+    pub const DeepSkyBlue: ColorRGB = ColorRGB::from_color_code(DeepSkyBlue);
+    pub const DimGray: ColorRGB = ColorRGB::from_color_code(DimGray);
+    pub const DimGrey: ColorRGB = ColorRGB::from_color_code(DimGrey);
+    pub const DodgerBlue: ColorRGB = ColorRGB::from_color_code(DodgerBlue);
+    pub const FireBrick: ColorRGB = ColorRGB::from_color_code(FireBrick);
+    pub const FloralWhite: ColorRGB = ColorRGB::from_color_code(FloralWhite);
+    pub const ForestGreen: ColorRGB = ColorRGB::from_color_code(ForestGreen);
+    pub const Fuchsia: ColorRGB = ColorRGB::from_color_code(Fuchsia);
+    pub const Gainsboro: ColorRGB = ColorRGB::from_color_code(Gainsboro);
+    pub const GhostWhite: ColorRGB = ColorRGB::from_color_code(GhostWhite);
+    pub const Gold: ColorRGB = ColorRGB::from_color_code(Gold);
+    pub const Goldenrod: ColorRGB = ColorRGB::from_color_code(Goldenrod);
+    pub const Gray: ColorRGB = ColorRGB::from_color_code(Gray);
+    pub const Grey: ColorRGB = ColorRGB::from_color_code(Grey);
+    pub const Green: ColorRGB = ColorRGB::from_color_code(Green);
+    pub const GreenYellow: ColorRGB = ColorRGB::from_color_code(GreenYellow);
+    pub const Honeydew: ColorRGB = ColorRGB::from_color_code(Honeydew);
+    pub const HotPink: ColorRGB = ColorRGB::from_color_code(HotPink);
+    pub const IndianRed: ColorRGB = ColorRGB::from_color_code(IndianRed);
+    pub const Indigo: ColorRGB = ColorRGB::from_color_code(Indigo);
+    pub const Ivory: ColorRGB = ColorRGB::from_color_code(Ivory);
+    pub const Khaki: ColorRGB = ColorRGB::from_color_code(Khaki);
+    pub const Lavender: ColorRGB = ColorRGB::from_color_code(Lavender);
+    pub const LavenderBlush: ColorRGB = ColorRGB::from_color_code(LavenderBlush);
+    pub const LawnGreen: ColorRGB = ColorRGB::from_color_code(LawnGreen);
+    pub const LemonChiffon: ColorRGB = ColorRGB::from_color_code(LemonChiffon);
+    pub const LightBlue: ColorRGB = ColorRGB::from_color_code(LightBlue);
+    pub const LightCoral: ColorRGB = ColorRGB::from_color_code(LightCoral);
+    pub const LightCyan: ColorRGB = ColorRGB::from_color_code(LightCyan);
+    pub const LightGoldenrodYellow: ColorRGB = ColorRGB::from_color_code(LightGoldenrodYellow);
+    pub const LightGreen: ColorRGB = ColorRGB::from_color_code(LightGreen);
+    pub const LightGrey: ColorRGB = ColorRGB::from_color_code(LightGrey);
+    pub const LightPink: ColorRGB = ColorRGB::from_color_code(LightPink);
+    pub const LightSalmon: ColorRGB = ColorRGB::from_color_code(LightSalmon);
+    pub const LightSeaGreen: ColorRGB = ColorRGB::from_color_code(LightSeaGreen);
+    pub const LightSkyBlue: ColorRGB = ColorRGB::from_color_code(LightSkyBlue);
+    pub const LightSlateGray: ColorRGB = ColorRGB::from_color_code(LightSlateGray);
+    pub const LightSlateGrey: ColorRGB = ColorRGB::from_color_code(LightSlateGrey);
+    pub const LightSteelBlue: ColorRGB = ColorRGB::from_color_code(LightSteelBlue);
+    pub const LightYellow: ColorRGB = ColorRGB::from_color_code(LightYellow);
+    pub const Lime: ColorRGB = ColorRGB::from_color_code(Lime);
+    pub const LimeGreen: ColorRGB = ColorRGB::from_color_code(LimeGreen);
+    pub const Linen: ColorRGB = ColorRGB::from_color_code(Linen);
+    pub const Magenta: ColorRGB = ColorRGB::from_color_code(Magenta);
+    pub const Maroon: ColorRGB = ColorRGB::from_color_code(Maroon);
+    pub const MediumAquamarine: ColorRGB = ColorRGB::from_color_code(MediumAquamarine);
+    pub const MediumBlue: ColorRGB = ColorRGB::from_color_code(MediumBlue);
+    pub const MediumOrchid: ColorRGB = ColorRGB::from_color_code(MediumOrchid);
+    pub const MediumPurple: ColorRGB = ColorRGB::from_color_code(MediumPurple);
+    pub const MediumSeaGreen: ColorRGB = ColorRGB::from_color_code(MediumSeaGreen);
+    pub const MediumSlateBlue: ColorRGB = ColorRGB::from_color_code(MediumSlateBlue);
+    pub const MediumSpringGreen: ColorRGB = ColorRGB::from_color_code(MediumSpringGreen);
+    pub const MediumTurquoise: ColorRGB = ColorRGB::from_color_code(MediumTurquoise);
+    pub const MediumVioletRed: ColorRGB = ColorRGB::from_color_code(MediumVioletRed);
+    pub const MidnightBlue: ColorRGB = ColorRGB::from_color_code(MidnightBlue);
+    pub const MintCream: ColorRGB = ColorRGB::from_color_code(MintCream);
+    pub const MistyRose: ColorRGB = ColorRGB::from_color_code(MistyRose);
+    pub const Moccasin: ColorRGB = ColorRGB::from_color_code(Moccasin);
+    pub const NavajoWhite: ColorRGB = ColorRGB::from_color_code(NavajoWhite);
+    pub const Navy: ColorRGB = ColorRGB::from_color_code(Navy);
+    pub const OldLace: ColorRGB = ColorRGB::from_color_code(OldLace);
+    pub const Olive: ColorRGB = ColorRGB::from_color_code(Olive);
+    pub const OliveDrab: ColorRGB = ColorRGB::from_color_code(OliveDrab);
+    pub const Orange: ColorRGB = ColorRGB::from_color_code(Orange);
+    pub const OrangeRed: ColorRGB = ColorRGB::from_color_code(OrangeRed);
+    pub const Orchid: ColorRGB = ColorRGB::from_color_code(Orchid);
+    pub const PaleGoldenrod: ColorRGB = ColorRGB::from_color_code(PaleGoldenrod);
+    pub const PaleGreen: ColorRGB = ColorRGB::from_color_code(PaleGreen);
+    pub const PaleTurquoise: ColorRGB = ColorRGB::from_color_code(PaleTurquoise);
+    pub const PaleVioletRed: ColorRGB = ColorRGB::from_color_code(PaleVioletRed);
+    pub const PapayaWhip: ColorRGB = ColorRGB::from_color_code(PapayaWhip);
+    pub const PeachPuff: ColorRGB = ColorRGB::from_color_code(PeachPuff);
+    pub const Peru: ColorRGB = ColorRGB::from_color_code(Peru);
+    pub const Pink: ColorRGB = ColorRGB::from_color_code(Pink);
+    pub const Plaid: ColorRGB = ColorRGB::from_color_code(Plaid);
+    pub const Plum: ColorRGB = ColorRGB::from_color_code(Plum);
+    pub const PowderBlue: ColorRGB = ColorRGB::from_color_code(PowderBlue);
+    pub const Purple: ColorRGB = ColorRGB::from_color_code(Purple);
+    pub const Red: ColorRGB = ColorRGB::from_color_code(Red);
+    pub const RosyBrown: ColorRGB = ColorRGB::from_color_code(RosyBrown);
+    pub const RoyalBlue: ColorRGB = ColorRGB::from_color_code(RoyalBlue);
+    pub const SaddleBrown: ColorRGB = ColorRGB::from_color_code(SaddleBrown);
+    pub const Salmon: ColorRGB = ColorRGB::from_color_code(Salmon);
+    pub const SandyBrown: ColorRGB = ColorRGB::from_color_code(SandyBrown);
+    pub const SeaGreen: ColorRGB = ColorRGB::from_color_code(SeaGreen);
+    pub const Seashell: ColorRGB = ColorRGB::from_color_code(Seashell);
+    pub const Sienna: ColorRGB = ColorRGB::from_color_code(Sienna);
+    pub const Silver: ColorRGB = ColorRGB::from_color_code(Silver);
+    pub const SkyBlue: ColorRGB = ColorRGB::from_color_code(SkyBlue);
+    pub const SlateBlue: ColorRGB = ColorRGB::from_color_code(SlateBlue);
+    pub const SlateGray: ColorRGB = ColorRGB::from_color_code(SlateGray);
+    pub const SlateGrey: ColorRGB = ColorRGB::from_color_code(SlateGrey);
+    pub const Snow: ColorRGB = ColorRGB::from_color_code(Snow);
+    pub const SpringGreen: ColorRGB = ColorRGB::from_color_code(SpringGreen);
+    pub const SteelBlue: ColorRGB = ColorRGB::from_color_code(SteelBlue);
+    pub const Tan: ColorRGB = ColorRGB::from_color_code(Tan);
+    pub const Teal: ColorRGB = ColorRGB::from_color_code(Teal);
+    pub const Thistle: ColorRGB = ColorRGB::from_color_code(Thistle);
+    pub const Tomato: ColorRGB = ColorRGB::from_color_code(Tomato);
+    pub const Turquoise: ColorRGB = ColorRGB::from_color_code(Turquoise);
+    pub const Violet: ColorRGB = ColorRGB::from_color_code(Violet);
+    pub const Wheat: ColorRGB = ColorRGB::from_color_code(Wheat);
+    pub const White: ColorRGB = ColorRGB::from_color_code(White);
+    pub const WhiteSmoke: ColorRGB = ColorRGB::from_color_code(WhiteSmoke);
+    pub const Yellow: ColorRGB = ColorRGB::from_color_code(Yellow);
+    pub const YellowGreen: ColorRGB = ColorRGB::from_color_code(YellowGreen);
 }

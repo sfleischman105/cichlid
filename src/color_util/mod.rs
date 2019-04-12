@@ -9,6 +9,16 @@ pub mod rainbow;
 
 use crate::{ColorRGB, HSV};
 
+
+pub trait ColorIterUtil {
+    fn set_color(self, color: ColorRGB);
+
+    fn clear(self) {
+        self.set_color(RGB!(0, 0, 0));
+    }
+}
+
+
 /// Fills an iterable object with a gradient from the `HSV` values `start` to `finish`, exclusive of the
 /// `finish`.
 pub trait GradientFill {

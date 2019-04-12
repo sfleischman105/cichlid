@@ -16,9 +16,13 @@ test = true
 doctest = true
 crate-type = ["rlib"]
 
+#[dev-dependencies]
+#criterion = "0.2.11"
+
 [features]
 no-std = []
 default = []
+low-mem = []
 
 [profile.dev]
 opt-level = 1
@@ -34,3 +38,7 @@ debug-assertions = false
 codegen-units = 1
 incremental = false
 overflow-checks = false
+
+[[bench]]
+name = "bench"
+harness = false
