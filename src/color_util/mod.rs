@@ -7,10 +7,14 @@ pub mod blur;
 pub mod gradient;
 pub mod rainbow;
 
-use crate::{ColorRGB, HSV};
+use crate::{ColorRGB, HSV, PowerEstimator};
 
 
-pub trait ColorIterUtil: Sized {
+trait ColorIter: Sized {
+    fn estimate_power<T: PowerEstimator>(self);
+}
+
+trait ColorIterMut: ColorIter {
     fn set_color(self, color: ColorRGB);
 
     fn clear(self) {

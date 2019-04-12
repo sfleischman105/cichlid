@@ -92,9 +92,9 @@ impl HSV {
         let (hue, sat, val)= (self.h, self.s, self.v);
 
         if sat == 0 {
-            return ColorRGB::new(255, 255, 255);
+            return RGB!(255, 255, 255);
         } else if val == 0 {
-            return ColorRGB::new(0, 0, 0);
+            return RGB!(0, 0, 0);
         }
 
         let mut rgb: ColorRGB = hue_to_full_rgb(hue);
@@ -152,24 +152,10 @@ impl HSV {
         let rampup_adj_with_floor: u8 = rampup_amp_adj + brightness_floor;
         let rampdown_adj_with_floor: u8 = rampdown_amp_adj + brightness_floor;
 
-        if section == 0 {
-            ColorRGB::new(
-                brightness_floor,
-                rampdown_adj_with_floor,
-                rampup_adj_with_floor,
-            )
-        } else if section == 1 {
-            ColorRGB::new(
-                rampup_adj_with_floor,
-                brightness_floor,
-                rampdown_adj_with_floor,
-            )
-        } else {
-            ColorRGB::new(
-                rampdown_adj_with_floor,
-                rampup_adj_with_floor,
-                brightness_floor,
-            )
+        match section {
+            0 => RGB!(brightness_floor, rampdown_adj_with_floor, rampup_adj_with_floor),
+            1 => RGB!(rampup_adj_with_floor, brightness_floor, rampdown_adj_with_floor),
+            _ => RGB!(rampdown_adj_with_floor, rampup_adj_with_floor, brightness_floor)
         }
     }
 
@@ -193,20 +179,20 @@ mod hsv_inner {
         let third: u8 = scale8(offset8, 85);
 
         let rgb: ColorRGB = match (hue & 0b1110_0000) >> 5 {
-            0b000 => ColorRGB::new(255 - third, third, 0),
-            0b001 => ColorRGB::new(171, 85 + third, 0),
+            0b000 => RGB!(255 - third, third, 0),
+            0b001 => RGB!(171, 85 + third, 0),
             0b010 => {
                 let two_thirds = scale8(offset8, ((256u16 * 2) / 3) as u8);
-                ColorRGB::new(171 - two_thirds, 170 + third, 0)
+                RGB!(171 - two_thirds, 170 + third, 0)
             }
-            0b011 => ColorRGB::new(0, 255 - third, third),
+            0b011 => RGB!(0, 255 - third, third),
             0b100 => {
                 let two_thirds = scale8(offset8, ((256u16 * 2) / 3) as u8);
-                ColorRGB::new(0, 171 - two_thirds, 85 + two_thirds)
+                RGB!(0, 171 - two_thirds, 85 + two_thirds)
             }
-            0b101 => ColorRGB::new(third, 0, 255 - third),
-            0b110 => ColorRGB::new(85 + third, 0, 171 - third),
-            0b111 => ColorRGB::new(170 + third, 0, 85 - third),
+            0b101 => RGB!(third, 0, 255 - third),
+            0b110 => RGB!(85 + third, 0, 171 - third),
+            0b111 => RGB!(170 + third, 0, 85 - third),
             _ => unsafe { unreachable_unchecked() },
         };
         rgb
@@ -219,10 +205,10 @@ mod hsv_inner {
 
     #[inline(always)]
     pub fn hue2rgb(hue: u8) -> ColorRGB {
-        HSV_2_RGB[hue as usize]
+        HSV_2_RGB_RAINBOW[hue as usize]
     }
 
-    static HSV_2_RGB: [ColorRGB; 256] = [
+    static HSV_2_RGB_RAINBOW: [ColorRGB; 256] = [
         RGB!(255,  0,  0), RGB!(253,  2,  0), RGB!(250,  5,  0), RGB!(247,  8,  0),
         RGB!(245, 10,  0), RGB!(242, 13,  0), RGB!(239, 16,  0), RGB!(237, 18,  0),
         RGB!(234, 21,  0), RGB!(231, 24,  0), RGB!(229, 26,  0), RGB!(226, 29,  0),
@@ -342,7 +328,7 @@ mod test {
             for s in (0..=255).step_by(15) {
                 for v in (0..=255).step_by(15) {
                     let hsv = HSV::new(h as u8, s as u8, v as u8);
-                    let rgb: ColorRGB = ColorRGB::from(hsv);
+                    let _rgb: ColorRGB = ColorRGB::from(hsv);
                     //println!("hsv ({},{},{}) -> r: {}, g: {}, b: {}\n", h, s, v, rgb.r, rgb.g, rgb.b);
                 }
             }

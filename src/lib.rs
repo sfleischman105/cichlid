@@ -43,12 +43,13 @@
 
 macro_rules! RGB {
     ($r:expr, $g:expr, $b:expr) => (crate::rgb::ColorRGB::new($r, $g, $b));
+    ($f_rgb:expr) => (crate::rgb::ColorRGB::from($f_rgb));
 }
 
-macro_rules! HSV {
-    ($h:expr, $s:expr, $v:expr) => {crate::hsv::HSV::new($h, $s, $v)};
-    ($h:expr) => {crate::hsv::HSV::new($h, 255, 255)};
-}
+//macro_rules! HSV {
+//    ($h:expr, $s:expr, $v:expr) => {crate::hsv::HSV::new($h, $s, $v)};
+//    ($h:expr) => {crate::hsv::HSV::new($h, 255, 255)};
+//}
 
 pub mod color_codes;
 
