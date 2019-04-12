@@ -3,30 +3,32 @@
 //! The majority of these traits are not intended to be implemented by users. Rather, they are
 //! meant for allowing easy ways to fill iterators with color.
 
-pub mod blur;
 pub mod gradient;
 pub mod rainbow;
 
-use crate::{ColorRGB, HSV, PowerEstimator};
+use crate::{ColorRGB, HSV};
 
+/// Useful methods when iterating over `ColorRGB`s.
+pub trait ColorIterMut: Sized {
+    fn fill(self, color: ColorRGB);
 
-trait ColorIter: Sized {
-    fn estimate_power<T: PowerEstimator>(self);
-}
-
-trait ColorIterMut: ColorIter {
-    fn fill_with(self, color: ColorRGB);
-
+    /// Sets all colors to Black.
     #[inline]
     fn clear(self) {
-        self.fill_with(RGB!(0, 0, 0));
+        self.fill(RGB!(0, 0, 0));
     }
 
+    /// Fades all colors to black by the fractional component.
+    fn fade_to_black(self, fade_by: u8);
+
+    /// Blurs colors by `blur_amount`.
+    ///
+    /// A lower `blur_amount` means a less extreme blur. For example, a `blur_amount` of 64
+    /// is a moderate blur, while past 171 the blur is somewhat flickery.
+    ///
+    /// This method does not retain brightness. Blurring will slowly fade all the colors to black.
     fn blur(self, blur_amount: u8);
-
-    fn fade_to_black(fade_by: u8);
 }
-
 
 /// Fills an iterable object with a gradient from the `HSV` values `start` to `finish`, exclusive of the
 /// `finish`.
@@ -84,15 +86,43 @@ pub trait RainbowFillSingleCycle {
     fn rainbow_fill_single_cycle(self, start_hue: u8);
 }
 
-/// Blurs colors by `blur_amount`.
-///
-/// A lower `blur_amount` means a less extreme blur. For example, a `blur_amount` of 64
-/// is a moderate blur, while past 171 the blur is somewhat flickery.
-///
-/// This method does not retain brightness. Blurring will slowly fade all the colors to black.
-pub trait Blur {
-    /// Blurs colors by `blur_amount`.
-    fn blur(self, blur_amount: u8);
+impl<'a, T> ColorIterMut for T
+    where
+        T: Sized + IntoIterator<Item = &'a mut ColorRGB>,
+{
+    fn fill(self, color: ColorRGB) {
+        self.into_iter().for_each(|p| *p = color);
+    }
+
+    fn fade_to_black(self, fade_by: u8) {
+        let fade_scale = 255 - fade_by;
+        self.into_iter().for_each(|p| p.scale(fade_scale));
+    }
+
+    fn blur(self, blur_amount: u8) {
+        let keep: u8 = 255 - blur_amount;
+        let seep: u8 = blur_amount >> 1;
+        let mut carry: ColorRGB = ColorRGB::Black;
+        let mut iter = self.into_iter().peekable();
+        loop {
+            let cur = iter.next();
+            let nxt = iter.peek();
+            if let Some(i) = cur {
+                let mut cur: ColorRGB = *i;
+                cur.scale(keep);
+                cur += carry;
+                if let Some(nxt) = nxt {
+                    let mut part: ColorRGB = **nxt;
+                    part.scale(seep);
+                    cur += part;
+                    carry = part;
+                }
+                *i = cur;
+            } else {
+                break;
+            }
+        }
+    }
 }
 
 /// Possible Directions around the color wheel a hue can go.
@@ -174,3 +204,35 @@ impl From<HueDirection> for GradientDirection {
         }
     }
 }
+
+#[cfg(test)]
+mod test {
+    use super::*;
+    use crate::HSV;
+
+    #[test]
+    fn blur_test() {
+        let mut arr = [
+            ColorRGB::Black,
+            ColorRGB::Red,
+            ColorRGB::BlueViolet,
+            ColorRGB::Yellow,
+        ];
+
+        println!("{:?}", arr);
+        for _ in 0..4 {
+            arr.blur(64);
+            println!("{:?}", arr);
+        }
+    }
+
+    #[test]
+    fn blur_test_long() {
+        let mut arr = [ColorRGB::BlueViolet; 256];
+
+        for _ in 0..4 {
+            arr.blur(64);
+        }
+    }
+}
+

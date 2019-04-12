@@ -67,7 +67,7 @@ pub use crate::rgb::ColorRGB;
 
 pub mod prelude {
     //! Easy importing of color auto traits.
-    pub use crate::color_util::Blur as _;
+    pub use crate::color_util::ColorIterMut as _;
     pub use crate::color_util::GradientFill as _;
     pub use crate::color_util::GradientFillRGB as _;
     pub use crate::color_util::GradientFillRGBToInclusive as _;
