@@ -77,9 +77,7 @@ where
 ///
 /// This function will fill the array inclusive of the `start` HSV and exclusive of the `end` HSV.
 /// This means that after completion, `output[output.len() - 1] will not be the end color, but
-/// rather the interpolated color before `start`. If you need the `end` color to appear last, see
-/// `hsv_gradient_inclusive_end`.
-///
+/// rather the interpolated color before `start`.
 /// # Edge Cases
 ///
 /// If `output` is empty, the operation returns immediately.
@@ -120,6 +118,15 @@ pub fn hsv_gradient<'a, C: 'a + From<HSV>, I: IntoIterator<Item = &'a mut C>>(
         .for_each(|(i, hsv)| *i = C::from(HSV::from(hsv)));
 }
 
+/// Creates a two-color gradient from two RGB values.
+///
+/// This function will fill the array inclusive of the `start` RGB and exclusive of the `end` RGB.
+/// This means that after completion, `output[output.len() - 1] will not be the end color, but
+/// rather the interpolated color before `start`.
+///
+/// # Edge Cases
+///
+/// If `output` is empty, the operation returns immediately.
 pub fn rgb_gradient<'a, C: 'a + From<ColorRGB>, I: IntoIterator<Item = &'a mut C>>(
     output: I,
     length: usize,

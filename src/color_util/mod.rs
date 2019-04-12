@@ -22,24 +22,30 @@ pub trait ColorIterUtil {
 /// Fills an iterable object with a gradient from the `HSV` values `start` to `finish`, exclusive of the
 /// `finish`.
 pub trait GradientFill {
+    /// Fills a gradient from two HSV's using linear interpolation between the two.
     fn gradient_fill(self, start: HSV, end: HSV, dir: GradientDirection);
 }
 
 /// Fills an iterable object with a gradient from the `HSV` values `start` to `finish`, inclusive of the
 /// `finish`.
 pub trait GradientFillToInclusive {
+    /// Fills a gradient from two HSV's using linear interpolation between the two, inclusive of
+    /// the end HSV.
     fn gradient_fill_to_inclusive(self, start: HSV, end: HSV, dir: GradientDirection);
 }
 
 /// Fills an iterable object with a gradient from the `ColorRGB` values `start` to `finish`, exclusive of the
 /// `finish`.
 pub trait GradientFillRGB {
+    /// Fills a gradient from two RGBs's using linear interpolation between the two.
     fn gradient_fill_rgb(self, start: ColorRGB, end: ColorRGB);
 }
 
 /// Fills an iterable object with a gradient from the `ColorRGB` values `start` to `finish`, inclusive of the
 /// `finish`.
 pub trait GradientFillRGBToInclusive {
+    /// Fills a gradient from two RGB's using linear interpolation between the two, inclusive of
+    /// the end RGB.
     fn gradient_fill_to_inclusive(self, start: ColorRGB, end: ColorRGB);
 }
 
@@ -76,6 +82,7 @@ pub trait RainbowFillSingleCycle {
 ///
 /// This method does not retain brightness. Blurring will slowly fade all the colors to black.
 pub trait Blur {
+    /// Blurs colors by `blur_amount`.
     fn blur(self, blur_amount: u8);
 }
 
