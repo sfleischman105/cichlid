@@ -4,6 +4,7 @@ version = "0.1.2"
 authors = ["Stephen Fleischman <stephenf@cs.washington.edu>"]
 description = "A color math library for programming addressable LEDs."
 documentation = "https://docs.rs/cichlid/"
+readme = "README.md"
 license = "MIT"
 homepage =  "https://github.com/sfleischman105/cichlid"
 repository = "https://github.com/sfleischman105/cichlid"

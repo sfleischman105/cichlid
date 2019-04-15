@@ -2,25 +2,8 @@
 
 use crate::HSV;
 
-impl<'a, T, H: 'a> super::RainbowFill<u8> for T
-where
-    T: IntoIterator<Item = &'a mut H>,
-    H: From<HSV>,
-{
-    fn rainbow_fill_with_sat_val(self, start_hue: u8, hue_delta: u8, sat: u8, val: u8) {
-        let mut hue: u8 = start_hue;
-        let mut hue_accm = || {
-            let old = hue;
-            hue = hue.wrapping_add(hue_delta);
-            old
-        };
-        self.into_iter()
-            .map(|p| (p, hue_accm()))
-            .for_each(|(i, h)| *i = H::from(HSV::new(h, sat, val)));
-    }
-}
 
-impl<'a, T, H: 'a> super::RainbowFill<u16> for T
+impl<'a, T, H: 'a> super::RainbowFill for T
 where
     T: IntoIterator<Item = &'a mut H>,
     H: From<HSV>,
@@ -38,23 +21,6 @@ where
     }
 }
 
-impl<'a, T, H: 'a> super::RainbowFill<u32> for T
-where
-    T: IntoIterator<Item = &'a mut H>,
-    H: From<HSV>,
-{
-    fn rainbow_fill_with_sat_val(self, start_hue: u8, hue_delta: u32, sat: u8, val: u8) {
-        let mut hue: u32 = u32::from(start_hue) << 24;
-        let mut hue_accm = || {
-            let old = hue;
-            hue = hue.wrapping_add(hue_delta);
-            (old >> 24) as u8
-        };
-        self.into_iter()
-            .map(|p| (p, hue_accm()))
-            .for_each(|(i, h)| *i = H::from(HSV::new(h, sat, val)));
-    }
-}
 
 impl<'a, T, H: 'a> super::RainbowFillSingleCycle for T
 where

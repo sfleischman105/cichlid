@@ -2,6 +2,63 @@
 //!
 //! The majority of these traits are not intended to be implemented by users. Rather, they are
 //! meant for allowing easy ways to fill iterators with color.
+//!
+//! ## Importing
+//!
+//! Importing can be done by one of the following ways:
+//!
+//! ```
+//! use cichlid::*;
+//! use cichlid::prelude::*;
+//! use cichlid::color_util::ColorIterMut;
+//! use cichlid::color_util::ColorIterMut as _;
+//! ```
+//!
+//! It is preferable to import that traits anonymously with `use ... as _`. This is because
+//! these traits are not meant to be implemented directly, so only the types implementing
+//! the traits need to be imported.
+//!
+//! ## Traits
+//!
+//! - [`ColorIterMut`]:
+//!     - General functions applying on iterators over [`ColorRGB`]'s.
+//!     - Examples of functions: `blur()`, `fade_to_black()`, `fill()`.
+//!     - Implemented for all Iterators over `&mut ColorRGB`.
+//! - [`GradientFill`]:
+//!     - Fills a Gradient from one [`HSV`] to another using Linear Interpolation.
+//!     - Implemented for any iterators implementing `ExactSizeIter`.
+//!     - Also Generic over `Iterator::Item` for any item implementing `From<HSV>`, meaning
+//!       this method works on itorators over both `HSV` and `ColorRGB`.
+//! - [`GradientFillToInclusive`]:
+//!     - Same as `GradientFill`, but creates a gradient inclusive of the last `HSV`. This means
+//!       that the last item iterated over will be garunteed to be the last `HSV`, rather than
+//!       being the color before.
+//!     - Requires a `DoubleEndedIter` trait be implemented for the operand.
+//! - [`GradientFillRGB`]:
+//!     - Works the same as`GradientFill`, but does a linear interpolation between two `ColorRGBs`.
+//!     - This results in a gradient that is a mathematically consistent transition, but isn't
+//!       as visually pleasing compared to doing Linear Interpolation with `HSV`s.
+//! - [`GradientFillRGBToInclusive`]:
+//!     - The `GradientFillToInclusive` to `GradientFillRGB`, as it fills up to and including the
+//!       last color.
+//!     - Also requires th
+//! - [`RainbowFill`]:
+//!     - Fills an Iterator over `&mut From<HSV>` with a rainbow pattern. This pattern repeats
+//!       forever, starting at a specific hue and taking a user-defined step size for each new
+//!       element.
+//! - [`RainbowFillSingleCycle`]:
+//!     - Fills an Iterator with a full rainbow cycle.
+//!
+//!
+//! [`ColorIterMut`]: ./trait.ColorIterMut.html
+//! [`GradientFill`]: ./trait.GradientFill.html
+//! [`GradientFillToInclusive`]: ./trait.GradientFillToInclusive.html
+//! [`GradientFillRGB`]: ./trait.GradientFill.html
+//! [`GradientFillRGBToInclusive`]: ./trait.GradientFillRGBToInclusive.html
+//! [`RainbowFill`]: ./trait.RainbowFill.html
+//! [`RainbowFillSingleCycle`]: ./trait.RainbowFillSingleCycle.html
+//! [`ColorRGB`]: ../struct.ColorRGB.html
+//! [`HSV`]: ../struct.HSV.html
 
 pub mod gradient;
 pub mod rainbow;
@@ -9,7 +66,36 @@ pub mod rainbow;
 use crate::{ColorRGB, HSV};
 
 /// Useful methods when iterating over `ColorRGB`s.
+///
+/// This is `impl`'d for any Iterator over `&mut RGB`. This includes both arrays and slices, the
+/// most common use case for this.
+///
+/// # Examples
+///
+/// Operating Directly on an array of `ColorRGB`s:
+///
+/// ```
+/// use cichlid::{prelude::*, ColorRGB};
+///
+/// let mut colors = [ColorRGB::BlanchedAlmond; 100];
+///
+/// colors.fill(ColorRGB::Yellow);
+/// colors.iter().for_each(|c| assert_eq!(*c, ColorRGB::Yellow));
+/// ```
+///
+/// Operating on slices is supported as well:
+///
+/// ```
+/// use cichlid::{prelude::*, ColorRGB};
+///
+/// let mut colors = [ColorRGB::Purple; 50];
+/// let color_slice = &mut colors[0..40];
+///
+/// color_slice.clear();
+/// color_slice.iter().for_each(|c| assert_eq!(*c, ColorRGB::Black));
+/// ```
 pub trait ColorIterMut: Sized {
+    /// Fills an entire Iterator with the specified color.
     fn fill(self, color: ColorRGB);
 
     /// Sets all colors to black.
@@ -18,7 +104,10 @@ pub trait ColorIterMut: Sized {
         self.fill(RGB!(0, 0, 0));
     }
 
-    /// Fades all colors to black by the fractional component.
+    /// Fades all colors to black by the a fraction.
+    ///
+    /// The `fade_by` parameter is interpreted as a fraction with a denominator of 255,
+    /// of which itself is the numerator.
     fn fade_to_black(self, fade_by: u8);
 
     /// Blurs colors by `blur_amount`.
@@ -32,6 +121,28 @@ pub trait ColorIterMut: Sized {
 
 /// Fills an iterable object with a gradient from the `HSV` values `start` to `finish`, exclusive of the
 /// `finish`.
+///
+/// # Examples
+///
+/// ```
+/// use cichlid::{prelude::*, ColorRGB, HSV, GradientDirection};
+///
+/// let mut colors = [ColorRGB::Black; 24];
+/// let start = HSV::new(0, 255, 255);
+/// let end = HSV::new(100, 255, 180);
+/// colors.gradient_fill(start, end, GradientDirection::Longest);
+/// ```
+///
+/// Also usable over Iterators for `HSV`:
+///
+/// ```
+/// use cichlid::{prelude::*, HSV, GradientDirection};
+///
+/// let mut colors = [HSV::BLANK; 80];
+/// let start = HSV::new(0, 255, 255);
+/// let end = HSV::new(100, 255, 180);
+/// colors.gradient_fill(start, end, GradientDirection::Longest);
+/// ```
 pub trait GradientFill {
     /// Fills a gradient from two HSV's using linear interpolation between the two.
     fn gradient_fill(self, start: HSV, end: HSV, dir: GradientDirection);
@@ -39,6 +150,19 @@ pub trait GradientFill {
 
 /// Fills an iterable object with a gradient from the `HSV` values `start` to `finish`, inclusive of the
 /// `finish`.
+///
+/// # Examples
+///
+/// ```
+/// use cichlid::{prelude::*, ColorRGB, HSV, GradientDirection};
+///
+/// let mut colors = [ColorRGB::Black; 80];
+/// let start = HSV::new(130, 200, 251);
+/// let end = HSV::new(206, 100, 255);
+///
+/// colors.gradient_fill_to_inclusive(start, end, GradientDirection::Shortest);
+/// assert_eq!(*colors.last().unwrap(), ColorRGB::from(end));
+/// ```
 pub trait GradientFillToInclusive {
     /// Fills a gradient from two HSV's using linear interpolation between the two, inclusive of
     /// the end HSV.
@@ -57,25 +181,29 @@ pub trait GradientFillRGB {
 pub trait GradientFillRGBToInclusive {
     /// Fills a gradient from two RGB's using linear interpolation between the two, inclusive of
     /// the end RGB.
-    fn gradient_fill_to_inclusive(self, start: ColorRGB, end: ColorRGB);
+    fn gradient_fill_rgb_to_inclusive(self, start: ColorRGB, end: ColorRGB);
 }
 
 /// Fills an iterable object with a rainbow hue of a desired step size.
 ///
-/// Step sizes are unsigned integers `u8`, `u16`, or `u32`. The Most significant byte of
-/// each integer is used to represent the full number of hues to increment between each iterated
-/// value, while the other bytes (if present) are added as a fractional component.
-pub trait RainbowFill<C>: Sized {
+/// Step sizes is a `u16`. The Most significant byte of each integer is used to represent the
+/// full number of hues to increment between each iterated value, while the second (LSB)
+/// byte is added as a fractional component.
+///
+/// For example, if one desires to change a single hue between each element, the `hue_delta`
+/// should be set to `0x0100`. If a hue is desired to change every 256 elements, then the
+/// `hue_delta` should be `0x0001`.
+pub trait RainbowFill: Sized {
     /// Fills an object with a rainbow gradient hue of a desired step size and from a desired
     /// starting hue.
     #[inline(always)]
-    fn rainbow_fill(self, start_hue: u8, hue_delta: C) {
+    fn rainbow_fill(self, start_hue: u8, hue_delta: u16) {
         self.rainbow_fill_with_sat_val(start_hue, hue_delta, 255, 255);
     }
 
     /// Fills an object with a rainbow gradient hue of a desired step size and from a desired
     /// starting hue and constant additional saturation and value (components of a HSV).
-    fn rainbow_fill_with_sat_val(self, start_hue: u8, hue_delta: C, sat: u8, val: u8);
+    fn rainbow_fill_with_sat_val(self, start_hue: u8, hue_delta: u16, sat: u8, val: u8);
 }
 
 /// Fills an iterable object with a single complete rainbow.
@@ -216,10 +344,25 @@ mod test {
             ColorRGB::Yellow,
         ];
 
-        println!("{:?}", arr);
         for _ in 0..4 {
             arr.blur(64);
-            println!("{:?}", arr);
+        }
+    }
+
+    #[test]
+    fn slice_color_itermut_test() {
+        let mut colors = [ColorRGB::Purple; 50];
+        let color_slice = &mut colors[0..40];
+        color_slice.blur(20);
+        color_slice.clear();
+        color_slice.iter().for_each(|c| assert_eq!(*c, ColorRGB::Black));
+    }
+
+    #[test]
+    fn color_itermut_test() {
+        let mut colors = [ColorRGB::Gold; 50];
+        for i in 0..=255 {
+            colors.blur(i);
         }
     }
 

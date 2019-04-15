@@ -21,8 +21,47 @@
 //! This Library is still in its infancy, and as such there may be a lack of documentation and
 //! vigorous testing.
 //!
+//! # Examples
 //!
-//! # `no-std`
+//! General Color operations:
+//!
+//! ```
+//! use cichlid::*;
+//!
+//! let red = ColorRGB::Red;
+//! let blue = ColorRGB::Blue;
+//! let mut purple = red + blue;
+//! assert_eq!(purple, ColorRGB::new(255, 0, 255));
+//!
+//! purple.scale(128); // Scale by half
+//! assert_eq!(purple, ColorRGB::new(128, 0, 128));
+//!
+//! purple *= 2;  // Multiple all components by two
+//! assert_eq!(purple, red + blue);
+//! ```
+//!
+//! Using `HSV` (Hue, Saturation, Value) and converting to `ColorRGB`:
+//!
+//! ```
+//! use cichlid::*;
+//!
+//! let red_hsv = HSV::new(0, 255, 255);
+//! let red_rgb = ColorRGB::from(red_hsv);
+//! assert_eq!(red_rgb, ColorRGB::Red);
+//! ```
+//!
+//! Creating a gradient is very easy, simply import the trait and call the method:
+//!
+//! ```
+//! use cichlid::*;
+//! let mut colors = [ColorRGB::Black; 100];
+//!
+//! let start = HSV::new(0, 255, 255);
+//! let end = HSV::new(100, 255, 180);
+//! colors.gradient_fill(start, end, GradientDirection::Longest);
+//! ```
+//!
+//! # no-std
 //!
 //! To use in a `no-std` environment, simply add the following to your project's `cargo.toml`:
 //!
@@ -75,10 +114,13 @@ pub use crate::rgb::ColorRGB;
 pub mod prelude {
     //! Easy importing of color auto traits.
     pub use crate::color_util::ColorIterMut as _;
+
     pub use crate::color_util::GradientFill as _;
+    pub use crate::color_util::GradientFillToInclusive as _;
+
     pub use crate::color_util::GradientFillRGB as _;
     pub use crate::color_util::GradientFillRGBToInclusive as _;
-    pub use crate::color_util::GradientFillToInclusive as _;
+
     pub use crate::color_util::RainbowFill as _;
     pub use crate::color_util::RainbowFillSingleCycle as _;
 }

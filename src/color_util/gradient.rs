@@ -61,7 +61,7 @@ where
     T::IntoIter: ExactSizeIterator + DoubleEndedIterator,
     H: From<ColorRGB>,
 {
-    fn gradient_fill_to_inclusive(self, start: ColorRGB, end: ColorRGB) {
+    fn gradient_fill_rgb_to_inclusive(self, start: ColorRGB, end: ColorRGB) {
         let mut iter = self.into_iter();
         if let Some(t) = iter.next_back() {
             *t = H::from(end);
