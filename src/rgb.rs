@@ -21,11 +21,11 @@ use std::ops::{
     MulAssign, Neg, Not, Rem, ShrAssign, Sub, SubAssign,
 };
 
+use crate::color_codes::*;
 use crate::math::blend;
 use crate::math::scale::*;
 use crate::power_mgmt::PowerEstimator;
 use crate::HSV;
-use crate::color_codes::*;
 
 //pub trait RGBOrder {
 //    const FIRST: usize;
@@ -53,11 +53,14 @@ use crate::color_codes::*;
 
 /// Object representing a color through the standard single byte red, green, and blue values.
 #[repr(packed)]
-#[derive(Copy, Clone, Default, PartialEq, Eq, Debug)]
+#[derive(Copy, Clone, Default, Eq, PartialEq, Debug, Hash)]
 pub struct ColorRGB {
+    /// Red Component.
     pub r: u8,
-    pub b: u8,
+    /// Green Component.
     pub g: u8,
+    /// Blue Component.
+    pub b: u8,
 }
 
 impl ColorRGB {
@@ -81,25 +84,11 @@ impl ColorRGB {
     }
 
     /// Sets all components to zero.
+    #[inline(always)]
     pub fn clear(&mut self) {
-        self.modify_all(|_| 0);
+        *self = ColorRGB::Black;
     }
 
-    /// Returns the value of the red component.
-    #[inline(always)]
-    pub fn r(self) -> u8 {
-        self.r
-    }
-    /// Returns the value of the green component.
-    #[inline(always)]
-    pub fn g(self) -> u8 {
-        self.g
-    }
-    /// Returns the value of the blue component.
-    #[inline(always)]
-    pub fn b(self) -> u8 {
-        self.b
-    }
     /// Returns the value of the red component.
     #[inline(always)]
     pub fn red(self) -> u8 {
@@ -114,51 +103,6 @@ impl ColorRGB {
     #[inline(always)]
     pub fn blue(self) -> u8 {
         self.b
-    }
-
-    /// Sets the red component.
-    #[inline(always)]
-    pub fn set_red(&mut self, r: u8) {
-        self.r = r;
-    }
-
-    /// Sets the green component.
-    #[inline(always)]
-    pub fn set_green(&mut self, g: u8) {
-        self.g = g;
-    }
-
-    /// Sets the blue component.
-    #[inline(always)]
-    pub fn set_blue(&mut self, b: u8) {
-        self.b = b;
-    }
-
-    /// Modifies the red component by a given function.
-    #[inline]
-    pub fn modify_red<F>(&mut self, mut f: F)
-    where
-        for<'w> F: FnMut(u8) -> u8,
-    {
-        self.r = f(self.r);
-    }
-
-    /// Modifies the green component by a given function.
-    #[inline]
-    pub fn modify_green<F>(&mut self, mut f: F)
-    where
-        for<'w> F: FnMut(u8) -> u8,
-    {
-        self.g = f(self.g);
-    }
-
-    /// Modifies the blue component by a given function.
-    #[inline]
-    pub fn modify_blue<F>(&mut self, mut f: F)
-    where
-        for<'w> F: FnMut(u8) -> u8,
-    {
-        self.b = f(self.b);
     }
 
     /// Function to modify each component by a given function.
@@ -233,15 +177,6 @@ impl ColorRGB {
             self.g = blend(self.g, other.g, amount_of_other);
             self.b = blend(self.b, other.b, amount_of_other);
         }
-    }
-
-    /// Estimates the power consumption of a single pixel. Returns the number of MilliWatts used
-    /// to power this single pixel at it's current red, green, and blue component values.
-    pub fn estimate_power<T>(self) -> u32
-    where
-        T: PowerEstimator,
-    {
-        T::estimate(self)
     }
 }
 

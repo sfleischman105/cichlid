@@ -8,8 +8,8 @@ A simple Rust library for managing RGB colorings. Works with `no-std` environmen
 Currently this library is geared toward use in embedded systems, but does contain useful
 APIs that are more generally useful.
 
-- **Fast `u8` and `u16` math** — Chiclid includes functions for scaling, dimmming, and
-   brightening single and double byte values. Basic trigometric functions (sine, cosine)
+- **Fast `u8` and `u16` math** — Cichlid includes functions for scaling, dimming, and
+   brightening single and double byte values. Basic trigonometric functions (sine, cosine)
    are implemented as well.
 
 - **HSV and RGB support** — Full control over each color is provided by the `HSV` and

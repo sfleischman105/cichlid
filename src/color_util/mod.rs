@@ -33,7 +33,7 @@
 //!     - Same as `GradientFill`, but creates a gradient inclusive of the last `HSV`. This means
 //!       that the last item iterated over will be garunteed to be the last `HSV`, rather than
 //!       being the color before.
-//!     - Requires a `DoubleEndedIter` trait be implemented for the operand.
+//!     - Generally Requires a `DoubleEndedIter` trait be implemented for implementee's type.
 //! - [`GradientFillRGB`]:
 //!     - Works the same as`GradientFill`, but does a linear interpolation between two `ColorRGBs`.
 //!     - This results in a gradient that is a mathematically consistent transition, but isn't
@@ -41,14 +41,13 @@
 //! - [`GradientFillRGBToInclusive`]:
 //!     - The `GradientFillToInclusive` to `GradientFillRGB`, as it fills up to and including the
 //!       last color.
-//!     - Also requires th
+//!     - Also requires that the Iterator implements `DoubleEndedIter`.
 //! - [`RainbowFill`]:
 //!     - Fills an Iterator over `&mut From<HSV>` with a rainbow pattern. This pattern repeats
 //!       forever, starting at a specific hue and taking a user-defined step size for each new
 //!       element.
 //! - [`RainbowFillSingleCycle`]:
 //!     - Fills an Iterator with a full rainbow cycle.
-//!
 //!
 //! [`ColorIterMut`]: ./trait.ColorIterMut.html
 //! [`GradientFill`]: ./trait.GradientFill.html
@@ -220,8 +219,7 @@ impl<'a, T: Sized + IntoIterator<Item = &'a mut ColorRGB>> ColorIterMut for T {
     }
 
     fn fade_to_black(self, fade_by: u8) {
-        let fade_scale = 255 - fade_by;
-        self.into_iter().for_each(|p| p.scale(fade_scale));
+        self.into_iter().for_each(|p| p.fade_to_black_by(fade_by));
     }
 
     fn blur(self, blur_amount: u8) {
@@ -355,7 +353,9 @@ mod test {
         let color_slice = &mut colors[0..40];
         color_slice.blur(20);
         color_slice.clear();
-        color_slice.iter().for_each(|c| assert_eq!(*c, ColorRGB::Black));
+        color_slice
+            .iter()
+            .for_each(|c| assert_eq!(*c, ColorRGB::Black));
     }
 
     #[test]
@@ -375,4 +375,3 @@ mod test {
         }
     }
 }
-

@@ -43,9 +43,12 @@ pub trait PowerEstimator {
 
     /// Estimates the power consumption in milliwatts of a strand of `ColorRGBs`.
     fn estimate_strand(strand: &[ColorRGB]) -> u32 {
-        let mut sums = strand.iter()
+        let mut sums = strand
+            .iter()
             .map(|p| (u32::from(p.r), u32::from(p.g), u32::from(p.b)))
-            .fold((0,0,0), |acc, x| (acc.0 + x.0, acc.1 + acc.1, acc.2 + x.2));
+            .fold((0, 0, 0), |acc, x| {
+                (acc.0 + x.0, acc.1 + acc.1, acc.2 + x.2)
+            });
 
         sums.0 *= Self::R_mW;
         sums.1 *= Self::G_mW;

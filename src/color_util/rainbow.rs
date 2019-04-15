@@ -2,7 +2,6 @@
 
 use crate::HSV;
 
-
 impl<'a, T, H: 'a> super::RainbowFill for T
 where
     T: IntoIterator<Item = &'a mut H>,
@@ -20,7 +19,6 @@ where
             .for_each(|(i, h)| *i = H::from(HSV::new(h, sat, val)));
     }
 }
-
 
 impl<'a, T, H: 'a> super::RainbowFillSingleCycle for T
 where

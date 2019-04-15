@@ -4,8 +4,8 @@
 //! Currently this library is geared toward use in embedded systems, but does contain useful
 //! APIs that are more generally useful.
 //!
-//! - **Fast `u8` and `u16` math** — Chiclid includes functions for scaling, dimmming, and
-//!    brightening single and double byte values. Basic trigometric functions (sine, cosine)
+//! - **Fast `u8` and `u16` math** — Cichlid includes functions for scaling, dimming, and
+//!    brightening single and double byte values. Basic trigonometric functions (sine, cosine)
 //!    are implemented as well.
 //!
 //! - **HSV and RGB support** — Full control over each color is provided by the `HSV` and
@@ -74,9 +74,8 @@
 //! # Feature flags
 //!
 //! The `low-mem` feature creates a binary that is smaller due to relying less on in memory
-//! tables, preferring direct computation instead.
-//!
-//! The only drawback of this is a slight speed decrease.
+//! tables, preferring direct computation instead. The only drawback of this is a slight
+//! speed decrease.
 //!
 //! # Acknowledgements
 //!
@@ -88,8 +87,12 @@
 #![cfg_attr(feature = "no-std", no_std)]
 
 macro_rules! RGB {
-    ($r:expr, $g:expr, $b:expr) => (crate::rgb::ColorRGB::new($r, $g, $b));
-    ($f_rgb:expr) => (crate::rgb::ColorRGB::from($f_rgb));
+    ($r:expr, $g:expr, $b:expr) => {
+        crate::rgb::ColorRGB::new($r, $g, $b)
+    };
+    ($f_rgb:expr) => {
+        crate::rgb::ColorRGB::from($f_rgb)
+    };
 }
 
 //macro_rules! HSV {

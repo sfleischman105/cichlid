@@ -1,6 +1,7 @@
 //! Collection of math functions for scaling, dimming, and brightening numbers.
 //!
-//! Credit for most of these functions goes to the authoers of the FastLED library.
+
+// Credit for most of these functions goes to the authoers of the FastLED library.
 
 #![allow(clippy::cast_lossless)]
 
