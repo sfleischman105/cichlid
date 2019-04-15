@@ -22,34 +22,10 @@ use std::ops::{
 };
 
 use crate::color_codes::*;
-use crate::math::blend;
+use crate::math::Scaling;
 use crate::math::scale::*;
 use crate::power_mgmt::PowerEstimator;
 use crate::HSV;
-
-//pub trait RGBOrder {
-//    const FIRST: usize;
-//    const SECOND: usize;
-//    const THIRD: usize;
-//}
-//
-//macro_rules! impl_order {
-//    ($t:tt, $o1:expr, $o2:expr, $o3:expr) => {
-//        pub struct $t;
-//        impl RGBOrder for $t {
-//            const FIRST: usize = $o1;
-//            const SECOND: usize = $o2;
-//            const THIRD: usize = $o3;
-//        }
-//    };
-//}
-//
-//impl_order!(OrderingRGB, 0, 1, 2);
-//impl_order!(OrderingRBG, 0, 2, 1);
-//impl_order!(OrderingGRB, 1, 0, 2);
-//impl_order!(OrderingBRG, 1, 2, 0);
-//impl_order!(OrderingGBR, 2, 0, 1);
-//impl_order!(OrderingBGR, 2, 1, 2);
 
 /// Object representing a color through the standard single byte red, green, and blue values.
 #[repr(packed)]
@@ -173,9 +149,9 @@ impl ColorRGB {
         if amount_of_other == 255 {
             *self = other;
         } else if amount_of_other != 0 {
-            self.r = blend(self.r, other.r, amount_of_other);
-            self.g = blend(self.g, other.g, amount_of_other);
-            self.b = blend(self.b, other.b, amount_of_other);
+            self.r = self.r.blend(other.r, amount_of_other);
+            self.g = self.g.blend(other.g, amount_of_other);
+            self.b = self.b.blend(other.b, amount_of_other);
         }
     }
 }

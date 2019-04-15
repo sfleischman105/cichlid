@@ -10,7 +10,7 @@ pub trait Trig<Signed> {
 }
 
 /// Scaling, Dimming, and Brightening functions for integers.
-pub trait Scaling: Sized + Copy {
+pub trait Scaling {
     /// Scales self by a second one (`scale`), which is treated as the numerator
     /// of a fraction whose denominator is `Self::MAX`.
     ///
@@ -90,7 +90,7 @@ pub trait Scaling: Sized + Copy {
 
 
     /// Inverse of the `dim_raw` function, brightens a value.
-    fn brighten(self) -> Self;
+    fn brighten_raw(self) -> Self;
 
     /// Inverse of the `dim_video` function, brightens a value.
     fn brighten_video(self) -> Self;
@@ -99,16 +99,7 @@ pub trait Scaling: Sized + Copy {
     ///
     /// It is also the inverse of `dim_lin`.
     fn brighten_lin(self) -> Self;
-}
 
-/// Blends two u8's together by the fraction `amount_of_b`.
-#[inline]
-pub fn blend(a: u8, b: u8, amount_of_b: u8) -> u8 {
-    let amount_of_a: u16 = u16::from(255 - amount_of_b);
-    let mut partial: u16 = 0;
-    partial += u16::from(a) * amount_of_a;
-    partial += u16::from(a);
-    partial += u16::from(b) * u16::from(amount_of_b);
-    partial += u16::from(b);
-    (partial >> 8) as u8
+    /// Blends self with another integer by the fraction `amount_of_b`.
+    fn blend(self, b: Self, amount_of_b: Self) -> Self;
 }
