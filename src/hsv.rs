@@ -9,6 +9,7 @@ use std::fmt;
 
 use crate::math::scale::*;
 use crate::ColorRGB;
+use crate::math::Scaling;
 
 const HSV_SECTION_3: u8 = 0x40;
 
@@ -65,7 +66,7 @@ impl HSV {
         if sat != 255 {
             rgb.modify_all(|c| scale8(c, sat));
             let desat = 255 - sat;
-            let brightness_floor = dim8_raw(desat);
+            let brightness_floor = desat.dim_raw();
             rgb.modify_all(|c| c + brightness_floor);
         }
 

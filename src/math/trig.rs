@@ -32,13 +32,13 @@ pub fn cos16(theta: u16) -> i16 {
 
 /// Returns the sine of a single byte integer.
 #[inline(always)]
-pub fn sin8(theta: u8) -> u8 {
+pub fn sin8(theta: u8) -> i8 {
     trig_inner::sin8(theta)
 }
 
 /// Returns the cosine of a single byte integer.
 #[inline(always)]
-pub fn cos8(theta: u8) -> u8 {
+pub fn cos8(theta: u8) -> i8 {
     sin8(theta.wrapping_add(64))
 }
 
@@ -51,7 +51,7 @@ mod trig_inner {
 
     static B_M16_INTERLEAVE: [u8; 8] = [0, 49, 49, 41, 90, 27, 117, 10];
 
-    pub fn sin8(theta: u8) -> u8 {
+    pub fn sin8(theta: u8) -> i8 {
         let mut offset: u8 = theta;
         if theta & 0x40 != 0 {
             offset = 255 - offset;
@@ -76,16 +76,20 @@ mod trig_inner {
         }
 
         let sin: u8 = unsafe { transmute(y) };
-
-        sin.wrapping_add(128)
+        unsafe { transmute(sin.wrapping_add(128)) }
     }
 }
 
 #[cfg(not(feature = "low-mem"))]
 mod trig_inner {
+    #[cfg(not(feature = "no-std"))]
+    use std::intrinsics::transmute;
+    #[cfg(feature = "no-std")]
+    use core::intrinsics::transmute;
+
     #[inline(always)]
-    pub fn sin8(theta: u8) -> u8 {
-        unsafe { *SIN8_TABLE.get_unchecked(theta as usize) }
+    pub fn sin8(theta: u8) -> i8 {
+        unsafe { transmute(*SIN8_TABLE.get_unchecked(theta as usize)) }
     }
 
     static SIN8_TABLE: [u8; 256] = [
@@ -103,6 +107,26 @@ mod trig_inner {
         30, 32, 33, 35, 37, 70, 73, 76, 78, 65, 67, 70, 72, 75, 78, 64, 67, 69, 72, 74, 77, 127,
         115, 118, 121, 124, 127, 114, 117, 120, 123, 126, 113, 116, 119, 122, 125,
     ];
+}
+
+impl super::Trig<i8> for u8 {
+    fn sin(self) -> i8 {
+        sin8(self)
+    }
+
+    fn cos(self) -> i8 {
+        cos8(self)
+    }
+}
+
+impl super::Trig<i16> for u16 {
+    fn sin(self) -> i16 {
+        sin16(self)
+    }
+
+    fn cos(self) -> i16 {
+        cos16(self)
+    }
 }
 
 #[cfg(test)]

@@ -115,7 +115,11 @@ pub use crate::prelude::*;
 pub use crate::rgb::ColorRGB;
 
 pub mod prelude {
-    //! Easy importing of color auto traits.
+    //! Easy importing of integer and color auto traits.
+
+    pub use crate::math::Trig as _;
+    pub use crate::math::Scaling as _;
+
     pub use crate::color_util::ColorIterMut as _;
 
     pub use crate::color_util::GradientFill as _;
