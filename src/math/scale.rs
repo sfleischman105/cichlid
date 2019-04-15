@@ -10,6 +10,34 @@
 
 #![allow(clippy::cast_lossless)]
 
+
+pub use crate::math::scale::scale_u8_impls::scale as scale8;
+pub use crate::math::scale::scale_u8_impls::scale_video as scale8_video;
+pub use crate::math::scale::scale_u8_impls::dim_raw as dim8_raw;
+pub use crate::math::scale::scale_u8_impls::dim_video as dim8_video;
+pub use crate::math::scale::scale_u8_impls::dim_lin as dim8_lin;
+pub use crate::math::scale::scale_u8_impls::brighten_raw as brighten8_raw;
+pub use crate::math::scale::scale_u8_impls::brighten_video as brighten8_video;
+pub use crate::math::scale::scale_u8_impls::brighten_lin as brighten8_lin;
+pub use crate::math::scale::scale_u8_impls::nscale as nscale8;
+pub use crate::math::scale::scale_u8_impls::nscale_x2 as nscale8x2;
+pub use crate::math::scale::scale_u8_impls::nscale_x3 as nscale8x3;
+pub use crate::math::scale::scale_u8_impls::nscale_x4 as nscale8x4;
+
+pub use crate::math::scale::scale_u16_impls::scale as scale16;
+pub use crate::math::scale::scale_u16_impls::scale_video as scale16_video;
+pub use crate::math::scale::scale_u16_impls::dim_raw as dim16_raw;
+pub use crate::math::scale::scale_u16_impls::dim_video as dim16_video;
+pub use crate::math::scale::scale_u16_impls::dim_lin as dim16_lin;
+pub use crate::math::scale::scale_u16_impls::brighten_raw as brighten16_raw;
+pub use crate::math::scale::scale_u16_impls::brighten_video as brighten16_video;
+pub use crate::math::scale::scale_u16_impls::brighten_lin as brighten16_lin;
+pub use crate::math::scale::scale_u16_impls::nscale as nscale16;
+pub use crate::math::scale::scale_u16_impls::nscale_x2 as nscale16x2;
+pub use crate::math::scale::scale_u16_impls::nscale_x3 as nscale16x3;
+pub use crate::math::scale::scale_u16_impls::nscale_x4 as nscale16x4;
+
+
 macro_rules! impl_brighten_ops {
     ($t:tt, $up:tt, $max:expr, $fname:ident, $dname:ident) => {
         #[inline(always)]
@@ -100,128 +128,6 @@ pub mod scale_u16_impls {
     //! Scaling functions for `u16`s.
     use super::*;
     impl_scale_ops!(u16, u32, 16, 65535);
-}
-
-
-#[inline(always)]
-pub const fn scale8(i: u8, scale: u8) -> u8 {
-    crate::math::scale::scale_u8_impls::scale(i, scale)
-}
-
-#[inline(always)]
-pub const fn scale8_video(i: u8, scale: u8) -> u8 {
-    crate::math::scale::scale_u8_impls::scale_video(i, scale)
-}
-
-#[inline(always)]
-pub const fn dim8_raw(x: u8) -> u8 {
-    crate::math::scale::scale_u8_impls::dim_raw(x)
-}
-
-#[inline(always)]
-pub const fn dim8_video(x: u8) -> u8 {
-    crate::math::scale::scale_u8_impls::dim_video(x)
-}
-
-#[inline(always)]
-pub fn dim8_lin(mut x: u8) -> u8 {
-    crate::math::scale::scale_u8_impls::dim_lin(x)
-}
-
-#[inline(always)]
-pub const fn brighten8_raw(x: u8) -> u8 {
-    crate::math::scale::scale_u8_impls::brighten_raw(x)
-}
-
-#[inline(always)]
-pub const fn brighten8_video(x: u8) -> u8 {
-    crate::math::scale::scale_u8_impls::brighten_video(x)
-}
-
-#[inline]
-pub fn brighten8_lin(x: u8) -> u8 {
-    crate::math::scale::scale_u8_impls::brighten_lin(x)
-}
-
-#[inline(always)]
-pub fn nscale8(int: &mut u8, scale: u8) {
-    crate::math::scale::scale_u8_impls::nscale(int, scale)
-}
-
-#[inline(always)]
-pub fn nscale8x2(int_1: &mut u8, int_2: &mut u8, scale: u8) {
-    crate::math::scale::scale_u8_impls::nscale_x2(int_1, int_2, scale)
-}
-
-#[inline(always)]
-pub fn nscale8x3(int_1: &mut u8, int_2: &mut u8, int_3: &mut u8, scale: u8) {
-    crate::math::scale::scale_u8_impls::nscale_x3(int_1, int_2, int_3, scale)
-}
-
-#[inline(always)]
-pub fn nscale8x4(int_1: &mut u8, int_2: &mut u8, int_3: &mut u8, int_4: &mut u8, scale: u8) {
-    crate::math::scale::scale_u8_impls::nscale_x4(int_1, int_2, int_3, int_4, scale)
-}
-
-
-#[inline(always)]
-pub const fn scale16(i: u16, scale: u16) -> u16 {
-    crate::math::scale::scale_u16_impls::scale(i, scale)
-}
-
-#[inline(always)]
-pub const fn scale16_video(i: u16, scale: u16) -> u16 {
-    crate::math::scale::scale_u16_impls::scale_video(i, scale)
-}
-
-#[inline(always)]
-pub const fn dim16_raw(x: u16) -> u16 {
-    crate::math::scale::scale_u16_impls::dim_raw(x)
-}
-
-#[inline(always)]
-pub const fn dim16_video(x: u16) -> u16 {
-    crate::math::scale::scale_u16_impls::dim_video(x)
-}
-
-#[inline(always)]
-pub fn dim16_lin(mut x: u16) -> u16 {
-    crate::math::scale::scale_u16_impls::dim_lin(x)
-}
-
-#[inline(always)]
-pub const fn brighten16_raw(x: u16) -> u16 {
-    crate::math::scale::scale_u16_impls::brighten_raw(x)
-}
-
-#[inline(always)]
-pub const fn brighten16_video(x: u16) -> u16 {
-    crate::math::scale::scale_u16_impls::brighten_video(x)
-}
-
-#[inline(always)]
-pub fn brighten16_lin(x: u16) -> u16 {
-    crate::math::scale::scale_u16_impls::brighten_lin(x)
-}
-
-#[inline(always)]
-pub fn nscale16(int: &mut u16, scale: u16) {
-    crate::math::scale::scale_u16_impls::nscale(int, scale)
-}
-
-#[inline(always)]
-pub fn nscale16x2(int_1: &mut u16, int_2: &mut u16, scale: u16) {
-    crate::math::scale::scale_u16_impls::nscale_x2(int_1, int_2, scale)
-}
-
-#[inline(always)]
-pub fn nscale16x3(int_1: &mut u16, int_2: &mut u16, int_3: &mut u16, scale: u16) {
-    crate::math::scale::scale_u16_impls::nscale_x3(int_1, int_2, int_3, scale)
-}
-
-#[inline(always)]
-pub fn nscale16x4(int_1: &mut u16, int_2: &mut u16, int_3: &mut u16, int_4: &mut u16, scale: u16) {
-    crate::math::scale::scale_u16_impls::nscale_x4(int_1, int_2, int_3, int_4, scale)
 }
 
 impl super::Scaling for u8 {
