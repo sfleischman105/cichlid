@@ -23,7 +23,6 @@ use std::ops::{
 
 use crate::color_codes::*;
 use crate::math::*;
-use crate::power_mgmt::PowerEstimator;
 use crate::HSV;
 
 /// Object representing a color through the standard single byte red, green, and blue values.

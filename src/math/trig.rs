@@ -82,10 +82,6 @@ mod trig_inner {
 
 #[cfg(not(feature = "low-mem"))]
 mod trig_inner {
-    #[cfg(not(feature = "no-std"))]
-    use std::intrinsics::transmute;
-    #[cfg(feature = "no-std")]
-    use core::intrinsics::transmute;
 
     #[inline(always)]
     pub fn sin8(theta: u8) -> u8 {

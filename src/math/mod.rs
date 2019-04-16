@@ -245,7 +245,7 @@ macro_rules! impl_scale_ops { ($t:tt, $up:tt, $shift:expr, $max:expr) => (
         "When the input is less than equal to`", stringify!($max / 2), "`, the output is dimmed ",
         "by halving."),
         #[inline]
-        pub const fn dim_lin(mut x: $t) -> $t {
+        pub const fn dim_lin(x: $t) -> $t {
             const UPPER_BITS: $t = (1 << ($shift - 1));
             let use_lin = (x & UPPER_BITS) != 0;
             let scale_x_reg = (use_lin as $t) * scale(x, x);
@@ -376,7 +376,6 @@ pub mod math_u8_impls {
     //! Better documentation for these functions can be found under [`ScalingInt`].
     //!
     //! [`ScalingInt`]: ../trait.ScalingInt.html
-    use super::*;
     impl_scale_ops!(u8, u16, 8, 255);
     impl_scaling_trait!(u8);
 }
@@ -387,7 +386,6 @@ pub mod math_u16_impls {
     //! Better documentation for these functions can be found under [`ScalingInt`].
     //!
     //! [`ScalingInt`]: ../trait.ScalingInt.html
-    use super::*;
     impl_scale_ops!(u16, u32, 16, 65535);
     impl_scaling_trait!(u16);
 }
