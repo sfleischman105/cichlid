@@ -1,17 +1,21 @@
 //! Collection of math Traits and functions for manipulating integers.
 //!
-//! Includes
-//!     - Scaling Functions (from one integer to another)
-//!     - In place and batch scaling (`nscale16x3` for example).
-//!     - Dimming and Brightening Functions
-//!     - Fast u8 and u16 trigometric functions
-//!     - Other useful operations, such as
+//! Some including functions:
+//! - Scaling Functions (from one integer to another)
+//! - In place and batch scaling (`nscale16x3` for example).
+//! - Dimming and Brightening Functions
+//! - Fast u8 and u16 trigonometric functions
+//! - Other useful operations, such as blending integers.
+//!
 //! This module offers a couple different ways to access the m
-//! These are the raw functions for both `u8` and `u16`. All of these methods
-//! are implemented through the `Scaling` trait interface, see that for a
+//! These are the raw functions for both `u8` and `u16`. Most of these methods
+//! are implemented through the [`Scaling`] trait interface, see that for better
 //! documentation of these functions.
 //!
-//! If `const fn's` are desired, use this module instead of the trait impls.
+//! If `const` functions are desired, use the re-exported functions rather than
+//! the trait impls.
+//!
+//! [`Scaling`]: ./trait.ScalingInt.html
 
 // Credit for most of these functions goes to the authoers of the FastLED library.
 
@@ -49,14 +53,45 @@ pub use math_u16_impls::nscale_x4 as nscale16x4;
 pub use math_u16_impls::blend as blend16;
 
 
-/// Trigonometric functions on integers.
+/// Basic trigonometric functions for integers.
 pub trait Trig<Signed> {
     fn sin(self) -> Signed;
 
     fn cos(self) -> Signed;
 }
 
-/// Scaling, Dimming, and Brightening functions for integers.
+/// Scaling, Dimming, Brightening, and other misc functions functions for integers
+/// representing scalar components.
+///
+/// These functions are extremely useful for operating on integer color components,
+/// such as the red/blue/green values seen in `RGB` color encoding.
+///
+/// # Notes on Fractional Components
+///
+/// These methods are used primarily for representing integers as fractions, rather than
+/// whole numbers. They can also be treated as fractions, percents, or some otherwise
+/// range-bounded scalar to a dimension. A more accurate way to represent this information
+/// would be to use a `f32`/`f64` and clamping the result to a pre-defined range.
+/// Integers are used as the math is significantly faster to compute, and floating values
+/// aren't always available on all target platforms.
+///
+/// For example, a `u8` takes on the range `[0:255]`. The maximum value
+/// of 255 doesn't represent the existence of 255 items, but rather being the maximum
+/// possible scalar for a dimension. Respectively, the value of 0 is the minimum value
+/// for a dimension.
+///
+/// As a by-product, these functions are saturating, hitting a ceiling at the maximum
+/// possible value, and hitting a floor at the minimum possible value (usually 0,
+/// except for `_video` functions).
+///
+/// # Terminology
+///
+/// - `_video`: The output is guaranteed to only be zero if at least one of the
+///   inputs is zero.
+/// - `_lin`: Used only in brightening and dimming functions. If the input is below
+///   half of the maximum value, the value is brightened / dimmed linearly instead of
+///   scaled.
+///
 pub trait ScalingInt {
     /// Scales self by a second one (`scale`), which is treated as the numerator
     /// of a fraction whose denominator is `Self::MAX`.
@@ -66,11 +101,11 @@ pub trait ScalingInt {
     /// # Example
     ///
     /// ```
-    /// use cichlid::math::scale8;
+    /// use cichlid::ScalingInt;
     ///
-    /// assert_eq!(scale8(100, 255), 100); // 100 * 1.0
-    /// assert_eq!(scale8(100, 0), 0); // 100 * 0.0
-    /// assert_eq!(scale8(100, 255 / 2), 50); // 100 * 0.5
+    /// assert_eq!(100u8.scale(255), 100); // 100 * 1.0
+    /// assert_eq!(100u8.scale(0), 0); // 100 * 0.0
+    /// assert_eq!(100u8.scale(255 / 2), 50); // 100 * 0.5
     /// ```
     fn scale(self, other: Self) -> Self;
 
@@ -85,14 +120,14 @@ pub trait ScalingInt {
     /// # Example
     ///
     /// ```
-    /// use cichlid::math::{scale8_video, scale8};
+    /// use cichlid::ScalingInt;
     ///
-    /// assert_eq!(scale8_video(100, 255), scale8(100, 255)); // same as scale8...
-    /// assert_ne!(scale8_video(1, 1),  scale8(1, 1));  // Except scale8() == 0
+    /// assert_eq!(100u8.scale_video(255), 100u8.scale(255)); // same as scale8...
+    /// assert_ne!(1u8.scale_video(1),  1u8.scale(1));  // Except scale8() == 0
     /// ```
     fn scale_video(self, other: Self) -> Self;
 
-    /// Dims self.
+    /// Dims an integer.
     ///
     /// The eye does not respond in a linear way to light. High speed PWM'd LEDs at 50% duty cycle
     /// appear far brighter then the 'half as bright' you might expect.
@@ -103,38 +138,37 @@ pub trait ScalingInt {
     /// # Example
     ///
     /// ```
-    /// use cichlid::math::dim8_raw;
+    /// use cichlid::ScalingInt;
     ///
     /// let full_brightness: u8 = 255;
-    /// assert_eq!(255, dim8_raw(full_brightness));
+    /// assert_eq!(255, full_brightness.dim_raw());
     ///
     /// let half_brightness: u8 = full_brightness / 2;
-    /// assert_eq!(63, dim8_raw(half_brightness));
+    /// assert_eq!(63, half_brightness.dim_raw());
     /// ```
     fn dim_raw(self) -> Self;
 
     /// Dims in video mode.
     ///
     /// This is the same as `dim_raw`, but the output of this function will only be zero if the
-    /// parameter is zero.
+    /// input is zero.
     ///
     /// # Example
     ///
     /// ```
-    /// use cichlid::math::{dim8_raw, dim8_video};
+    /// use cichlid::ScalingInt;
     ///
-    /// assert_eq!(dim8_raw(255), dim8_video(255));
-    /// assert_ne!(dim8_raw(30), dim8_video(30));
+    /// assert_eq!(255u8.dim_raw(), 255u8.dim_video());
+    /// assert_ne!(30u8.dim_raw(), 30u8.dim_video());
     /// ```
     fn dim_video(self) -> Self;
 
 
-    /// Dims linearly.
+    /// Dims an integer linearly.
     ///
     /// This is the same as `dim_raw`, but when `x < (Self::MAX / 2)`, the value is simply halved.
     /// The output will only be zero if the input is zero.
     fn dim_lin(self) -> Self;
-
 
     /// Inverse of the `dim_raw` function, brightens a value.
     fn brighten_raw(self) -> Self;
@@ -144,7 +178,7 @@ pub trait ScalingInt {
 
     /// Linear version of the `brighten8_raw`, that halves for values < `Self::MAX / 2`.
     ///
-    /// It is also the inverse of `dim_lin`.
+    /// Notably, this is the relative inverse of `dim_lin`.
     fn brighten_lin(self) -> Self;
 
     /// Blends self with another integer by the fraction `amount_of_b`.
@@ -280,7 +314,7 @@ macro_rules! impl_scale_ops { ($t:tt, $up:tt, $shift:expr, $max:expr) => (
 
 
     doc_comment!{concat!(
-        "Blends a `", stringify!($t), "` with another."),
+        "Blends a `", stringify!($t), "`another integer by the fraction `amount_of_b`."),
         #[inline]
         pub const fn blend(a: $t, b: $t, amount_of_b: $t) -> $t {
             let amount_of_a: $up = ($max - amount_of_b) as $up;
@@ -337,7 +371,7 @@ macro_rules! impl_scaling_trait {
 }
 
 pub mod math_u8_impls {
-    //! Math functions for `u8`s.
+    //! Math functions for `u8`s. Includes scaling, dimming, brightening.
     //!
     //! Better documentation for these functions can be found under [`ScalingInt`].
     //!
@@ -348,7 +382,7 @@ pub mod math_u8_impls {
 }
 
 pub mod math_u16_impls {
-    //! Math functions for `u16`s.
+    //! Math functions for `u16`s. Includes scaling, dimming, brightening.
     //!
     //! Better documentation for these functions can be found under [`ScalingInt`].
     //!

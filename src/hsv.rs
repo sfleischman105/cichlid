@@ -19,7 +19,10 @@ pub fn hue_to_full_rgb(hue: u8) -> ColorRGB {
     hsv_inner::hue2rgb_rainbow(hue)
 }
 
-/// Represents a color encoded in {hue, saturation, value} format.
+/// Represents a color encoded in `(hue, saturation, value)` format.
+///
+/// This structure is useful for a more human-centered approach to thinking
+/// about color. 
 #[derive(Copy, Clone, Default, Eq, PartialEq, Debug, Hash)]
 pub struct HSV {
     pub h: u8,
