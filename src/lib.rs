@@ -101,7 +101,6 @@ macro_rules! RGB {
 //}
 
 pub mod color_codes;
-
 pub mod color_util;
 pub mod hsv;
 pub mod math;
@@ -111,14 +110,15 @@ pub mod rgb;
 pub use crate::color_util::GradientDirection;
 pub use crate::hsv::HSV;
 pub use crate::power_mgmt::{DefaultPowerEstimator, PowerEstimator};
-pub use crate::prelude::*;
 pub use crate::rgb::ColorRGB;
+pub use crate::math::{ScalingInt, Trig};
+pub use crate::prelude::*;
 
 pub mod prelude {
     //! Easy importing of integer and color auto traits.
 
     pub use crate::math::Trig as _;
-    pub use crate::math::Scaling as _;
+    pub use crate::math::ScalingInt as _;
 
     pub use crate::color_util::ColorIterMut as _;
 

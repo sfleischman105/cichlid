@@ -22,8 +22,7 @@ use std::ops::{
 };
 
 use crate::color_codes::*;
-use crate::math::Scaling;
-use crate::math::scale::*;
+use crate::math::*;
 use crate::power_mgmt::PowerEstimator;
 use crate::HSV;
 

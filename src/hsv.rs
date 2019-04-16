@@ -7,9 +7,9 @@ use core::fmt;
 #[cfg(not(feature = "no-std"))]
 use std::fmt;
 
-use crate::math::scale::*;
+use crate::math::*;
 use crate::ColorRGB;
-use crate::math::Scaling;
+use crate::math::ScalingInt;
 
 const HSV_SECTION_3: u8 = 0x40;
 
