@@ -2,6 +2,7 @@
 
 #![allow(non_upper_case_globals)]
 #![allow(clippy::unreadable_literal)]
+
 pub const AliceBlue: u32 = 0xF0F8FF;
 pub const Amethyst: u32 = 0x9966CC;
 pub const AntiqueWhite: u32 = 0xFAEBD7;

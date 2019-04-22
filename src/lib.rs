@@ -86,6 +86,9 @@
 // TODO: SERDE
 #![cfg_attr(feature = "no-std", no_std)]
 
+#![cfg_attr(feature = "nightly", feature(link_llvm_intrinsics))]
+//#![feature(link_llvm_intrinsics)]
+
 macro_rules! RGB {
     ($r:expr, $g:expr, $b:expr) => {
         crate::rgb::ColorRGB::new($r, $g, $b)

@@ -21,21 +21,26 @@ crate-type = ["rlib"]
 
 #[dev-dependencies]
 #criterion = "0.2.11"
+# cargo objdump --target thumbv7em-none-eabihf --features=no-std --lib --release -- -disassemble-all > diss.txt
+# RUSTFLAGS='-C target-cpu=cortex-m4'
+# RUSTFLAGS='-C target-cpu=cortex-m4' cargo objdump --target thumbv7em-none-eabihf --features=no-std --lib --release -- -disassemble-all > dissasembly.txt
 
 [features]
 no-std = []
 default = []
 low-mem = []
+nightly = []
 
 [profile.dev]
-opt-level = 1
+opt-level = 3
 debug = true
 codegen-units = 1
+lto = true
 debug-assertions = false
 
 [profile.release]
 opt-level = 3
-debug = false
+debug = true
 lto = true
 debug-assertions = false
 codegen-units = 1

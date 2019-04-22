@@ -10,6 +10,14 @@ use core::fmt;
 #[cfg(not(feature = "no-std"))]
 use std::fmt;
 
+
+#[cfg(feature = "no-std")]
+use core::mem;
+#[cfg(not(feature = "no-std"))]
+use std::mem;
+
+use crate::math::ext::{uint8x4_t,uqadd8,uqsub8};
+
 #[cfg(feature = "no-std")]
 use core::ops::{
     Add, AddAssign, BitAnd, BitAndAssign, BitOr, BitOrAssign, Div, DivAssign, Index, IndexMut, Mul,
@@ -211,10 +219,13 @@ impl IndexMut<usize> for ColorRGB {
 impl AddAssign for ColorRGB {
     #[inline(always)]
     fn add_assign(&mut self, rhs: ColorRGB) {
+        let other = unsafe { uint8x4_t(rhs.r, rhs.g, rhs.b, mem::uninitialized()) };
+        let us =  unsafe { uint8x4_t(self.r, self.g, self.b, mem::uninitialized()) };
+        let qadd = uqadd8(us, other);
         *self = ColorRGB {
-            r: self.r.saturating_add(rhs.r),
-            g: self.g.saturating_add(rhs.g),
-            b: self.b.saturating_add(rhs.b),
+            r: qadd.0,
+            g: qadd.1,
+            b: qadd.2,
         };
     }
 }
@@ -230,10 +241,13 @@ impl AddAssign<u8> for ColorRGB {
 impl SubAssign for ColorRGB {
     #[inline(always)]
     fn sub_assign(&mut self, rhs: ColorRGB) {
+        let other = unsafe { uint8x4_t(rhs.r, rhs.g, rhs.b, mem::uninitialized()) };
+        let us =  unsafe { uint8x4_t(self.r, self.g, self.b, mem::uninitialized()) };
+        let qsub = uqsub8(us, other);
         *self = ColorRGB {
-            r: self.r.saturating_sub(rhs.r),
-            g: self.g.saturating_sub(rhs.g),
-            b: self.b.saturating_sub(rhs.b),
+            r: qsub.0,
+            g: qsub.1,
+            b: qsub.2,
         };
     }
 }

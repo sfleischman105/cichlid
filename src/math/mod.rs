@@ -22,7 +22,11 @@
 
 #![allow(clippy::cast_lossless)]
 
+// TODO: SIMD this stuff https://doc.rust-lang.org/core/arch/arm/index.html
+// https://doc.rust-lang.org/edition-guide/rust-2018/simd-for-faster-computing.html
+
 pub(crate) mod lerp;
+pub(crate) mod ext;
 pub mod trig;
 
 pub use math_u8_impls::scale as scale8;
