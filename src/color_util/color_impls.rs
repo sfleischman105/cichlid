@@ -1,3 +1,8 @@
+#[cfg(feature = "no-std")]
+use core::slice;
+#[cfg(not(feature = "no-std"))]
+use std::slice;
+
 use crate::{ColorRGB, HSV};
 
 impl<'a, T: Sized + IntoIterator<Item = &'a mut ColorRGB>> super::ColorIterMut for T {
@@ -25,8 +30,10 @@ impl<'a> super::ColorSliceMut for &'a mut [ColorRGB] {
     }
 
     fn fade_to_black(self, fade_by: u8) {
-        let scalar: u16 = 1 + fade_by as u16;
-        self.iter_mut().for_each(|c| c.scale(fade_by));
+//        let scalar: u16 = 1 + fade_by as u16;
+//        self.iter_mut().for_each(|c| c.scale(fade_by));
+        let raw_bytes: &mut [u8] = unsafe {rgb_as_raw_bytes(self.as_mut())};
+        batch_scale_u8(raw_bytes, fade_by);
     }
 
     fn blend(self, other: ColorRGB, amount_of_other: u8) {
@@ -44,6 +51,11 @@ impl<'a> super::ColorSliceMut for &'a mut [ColorRGB] {
     }
 }
 
+unsafe fn rgb_as_raw_bytes(rgbs: &mut [ColorRGB]) -> &mut [u8] {
+    slice::from_raw_parts_mut(rgbs.as_mut_ptr() as *mut u8, rgbs.len() * 3)
+}
+
+#[inline(always)]
 fn scale_post(i: u8, scale: u16) -> u8 {
     (((i as u16) * scale) >> 8) as u8
 }
@@ -64,8 +76,9 @@ fn batch_scale_u8(x: &mut [u8], scale: u8) {
     }
 }
 
-// Assumes length >= 8
+// Assumes length > 8
 // end is the pointer to the last byte
+#[inline]
 unsafe fn batch_scale_ptr(mut start: *mut u8, mut end: *mut u8, scale: u8) {
     debug_assert!((end as usize) - (start as usize) >= 4);
 
@@ -83,12 +96,10 @@ unsafe fn batch_scale_ptr(mut start: *mut u8, mut end: *mut u8, scale: u8) {
     end = end.add(1);
     let scalar: u32 = scalar as u32;
 
-    let mut i: u32 = 0;
     while start as usize != end as usize {
         let word_ptr: *mut u32 = start as *mut u32;
         *word_ptr = batch_scale_inner(*word_ptr, scalar);
         start = start.add(4);
-        i += 1;
     }
 }
 
@@ -148,7 +159,8 @@ mod test {
             buf_reg.iter_mut().for_each(|v| *v = scale_post(*v, scalar));
             buf_reg.iter().zip(buf_batch.iter()).enumerate().take(2390).for_each(|(i, bytes)| {
                 if bytes.0 != bytes.1 {
-                    println!("i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",i, i % 256, bytes.0,bytes.1,scale);
+                    panic!("i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
+                             i, i % 256, bytes.0,bytes.1,scale);
                 }
             });
 
@@ -164,7 +176,7 @@ mod test {
             rand_change(&mut seed);
         }
 
-        for it in 30..=10000 {
+        for it in 30..=5000 {
             rand_change(&mut seed);
             let numbers = 0..;
             let buffer: Vec<u8> = numbers.take(it)
@@ -223,7 +235,8 @@ mod test {
                     .enumerate()
                     .for_each(|(i, bytes)| {
                     if bytes.0 != bytes.1 {
-                        panic!("it: {}, i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}", it, i, i % 256, bytes.0, bytes.1, scale);
+                        panic!("it: {}, i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
+                               it, i, i % 256, bytes.0, bytes.1, scale);
                     }
                 });
 
