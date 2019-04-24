@@ -61,6 +61,7 @@
 
 pub mod gradient;
 pub mod rainbow;
+pub mod color_impls;
 
 use crate::{ColorRGB, HSV};
 
@@ -102,13 +103,9 @@ pub trait ColorIterMut: Sized {
     fn clear(self) {
         self.fill(RGB!(0, 0, 0));
     }
+}
 
-    /// Fades all colors to black by the a fraction.
-    ///
-    /// The `fade_by` parameter is interpreted as a fraction with a denominator of 255,
-    /// of which itself is the numerator.
-    fn fade_to_black(self, fade_by: u8);
-
+pub trait ColorSliceMut: Sized {
     /// Blurs colors by `blur_amount`.
     ///
     /// A lower `blur_amount` means a less extreme blur. For example, a `blur_amount` of 64
@@ -116,6 +113,14 @@ pub trait ColorIterMut: Sized {
     ///
     /// This method does not retain brightness. Blurring will slowly fade all the colors to black.
     fn blur(self, blur_amount: u8);
+
+    /// Fades all colors to black by the a fraction.
+    ///
+    /// The `fade_by` parameter is interpreted as a fraction with a denominator of 255,
+    /// of which itself is the numerator.
+    fn fade_to_black(self, fade_by: u8);
+
+    fn blend(self, other: ColorRGB, amount_of_other: u8);
 }
 
 /// Fills an iterable object with a gradient from the `HSV` values `start` to `finish`, exclusive of the
@@ -211,41 +216,6 @@ pub trait RainbowFill: Sized {
 /// method.
 pub trait RainbowFillSingleCycle {
     fn rainbow_fill_single_cycle(self, start_hue: u8);
-}
-
-impl<'a, T: Sized + IntoIterator<Item = &'a mut ColorRGB>> ColorIterMut for T {
-    fn fill(self, color: ColorRGB) {
-        self.into_iter().for_each(|p| *p = color);
-    }
-
-    fn fade_to_black(self, fade_by: u8) {
-        self.into_iter().for_each(|p| p.fade_to_black_by(fade_by));
-    }
-
-    fn blur(self, blur_amount: u8) {
-        let keep: u8 = 255 - blur_amount;
-        let seep: u8 = blur_amount >> 1;
-        let mut carry: ColorRGB = ColorRGB::Black;
-        let mut iter = self.into_iter().peekable();
-        loop {
-            let cur = iter.next();
-            let nxt = iter.peek();
-            if let Some(i) = cur {
-                let mut cur: ColorRGB = *i;
-                cur.scale(keep);
-                cur += carry;
-                if let Some(nxt) = nxt {
-                    let mut part: ColorRGB = **nxt;
-                    part.scale(seep);
-                    cur += part;
-                    carry = part;
-                }
-                *i = cur;
-            } else {
-                break;
-            }
-        }
-    }
 }
 
 /// Possible Directions around the color wheel a hue can go.

@@ -234,7 +234,7 @@ impl AddAssign for ColorRGB {
 impl AddAssign<u8> for ColorRGB {
     #[inline(always)]
     fn add_assign(&mut self, rhs: u8) {
-        self.modify_all(|c| c.saturating_add(rhs))
+        *self += RGB!(rhs, rhs, rhs);
     }
 }
 
@@ -255,7 +255,7 @@ impl SubAssign for ColorRGB {
 impl SubAssign<u8> for ColorRGB {
     #[inline(always)]
     fn sub_assign(&mut self, rhs: u8) {
-        self.modify_all(|c| c.saturating_sub(rhs))
+        *self -= RGB!(rhs, rhs, rhs);
     }
 }
 
@@ -321,9 +321,14 @@ impl Neg for ColorRGB {
 
     #[inline(always)]
     fn neg(self) -> ColorRGB {
-        let mut cln: ColorRGB = self;
-        cln.modify_all(|c| 255 - c);
-        cln
+        let rev = unsafe { uint8x4_t(255, 255, 255, mem::uninitialized()) };
+        let us =  unsafe { uint8x4_t(self.r, self.g, self.b, mem::uninitialized()) };
+        let qsub = uqsub8(rev, us);
+        ColorRGB {
+            r: qsub.0,
+            g: qsub.1,
+            b: qsub.2,
+        }
     }
 }
 
@@ -361,10 +366,30 @@ impl Add for ColorRGB {
     }
 }
 
+impl Add<u8> for ColorRGB {
+    type Output = ColorRGB;
+    #[inline(always)]
+    fn add(self, other: u8) -> ColorRGB {
+        let mut cln: ColorRGB = self;
+        cln += other;
+        cln
+    }
+}
+
 impl Sub for ColorRGB {
     type Output = ColorRGB;
     #[inline(always)]
     fn sub(self, other: ColorRGB) -> ColorRGB {
+        let mut cln: ColorRGB = self;
+        cln -= other;
+        cln
+    }
+}
+
+impl Sub<u8> for ColorRGB {
+    type Output = ColorRGB;
+    #[inline(always)]
+    fn sub(self, other: u8) -> ColorRGB {
         let mut cln: ColorRGB = self;
         cln -= other;
         cln

@@ -67,14 +67,14 @@ impl HSV {
         };
 
         if sat != 255 {
-            rgb.modify_all(|c| scale8(c, sat));
-            let desat = 255 - sat;
-            let brightness_floor = desat.dim_raw();
-            rgb.modify_all(|c| c + brightness_floor);
+            rgb.scale(sat);
+            let desat: u8 = 255 - sat;
+            let brightness_floor: u8 = desat.dim_raw();
+            rgb += brightness_floor;
         }
 
         if val != 255 {
-            rgb.modify_all(|c| scale8(c, val));
+            rgb.scale(val);
         }
 
         rgb

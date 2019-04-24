@@ -13,17 +13,19 @@ macro_rules! dsp_call {
 
 #[derive(Copy, Clone, Debug)]
 #[allow(non_camel_case_types)]
+#[cfg_attr(nightly, repr(simd))]
 pub struct uint8x4_t(pub u8, pub u8, pub u8, pub u8);
 
 #[derive(Copy, Clone, Debug)]
 #[allow(non_camel_case_types)]
+#[cfg_attr(nightly, repr(simd))]
 pub struct uint16x2_t(pub u16, pub u16);
 
 // http://www.keil.com/support/man/docs/armasm/armasm_dom1361289919288.htm
 #[inline(always)]
 pub fn uqadd8(a: uint8x4_t, b: uint8x4_t) -> uint8x4_t {
     match () {
-        #[cfg(armv7em)]
+        #[cfg(all(armv7em,nightly))]
         () => unsafe {
             extern "C" {
                 #[link_name = "llvm.arm.uqadd8"]
@@ -32,7 +34,7 @@ pub fn uqadd8(a: uint8x4_t, b: uint8x4_t) -> uint8x4_t {
             dsp_call!(arm_uqadd8, a, b)
         },
 
-        #[cfg(not(armv7em))]
+        #[cfg(not(all(armv7em,nightly)))]
         () =>  uint8x4_t(a.0.saturating_add(b.0),
                          a.1.saturating_add(b.1),
                          a.2.saturating_add(b.2),
@@ -44,7 +46,7 @@ pub fn uqadd8(a: uint8x4_t, b: uint8x4_t) -> uint8x4_t {
 #[inline(always)]
 pub fn uqadd16(a: uint16x2_t, b: uint16x2_t) -> uint16x2_t {
     match () {
-        #[cfg(armv7em)]
+        #[cfg(all(armv7em,nightly))]
         () => unsafe {
             extern "C" {
                 #[link_name = "llvm.arm.uqadd16"]
@@ -53,7 +55,7 @@ pub fn uqadd16(a: uint16x2_t, b: uint16x2_t) -> uint16x2_t {
             dsp_call!(arm_uqadd16, a, b)
         },
 
-        #[cfg(not(armv7em))]
+        #[cfg(not(all(armv7em,nightly)))]
         () =>  uint16x2_t(a.0.saturating_add(b.0),
                           a.1.saturating_add(b.1)),
     }
@@ -63,7 +65,7 @@ pub fn uqadd16(a: uint16x2_t, b: uint16x2_t) -> uint16x2_t {
 #[inline(always)]
 pub fn uqsub8(a: uint8x4_t, b: uint8x4_t) -> uint8x4_t {
     match () {
-        #[cfg(armv7em)]
+        #[cfg(all(armv7em,nightly))]
         () => unsafe {
             extern "C" {
                 #[link_name = "llvm.arm.uqsub8"]
@@ -72,7 +74,7 @@ pub fn uqsub8(a: uint8x4_t, b: uint8x4_t) -> uint8x4_t {
             dsp_call!(arm_uqsub8, a, b)
         },
 
-        #[cfg(not(armv7em))]
+        #[cfg(not(all(armv7em,nightly)))]
         () =>  uint8x4_t(a.0.saturating_sub(b.0),
                          a.1.saturating_sub(b.1),
                          a.2.saturating_sub(b.2),
@@ -85,7 +87,7 @@ pub fn uqsub8(a: uint8x4_t, b: uint8x4_t) -> uint8x4_t {
 #[inline(always)]
 pub fn uqsub16(a: uint16x2_t, b: uint16x2_t) -> uint16x2_t {
     match () {
-        #[cfg(armv7em)]
+        #[cfg(all(armv7em,nightly))]
         () => unsafe {
             extern "C" {
                 #[link_name = "llvm.arm.uqsub16"]
@@ -94,7 +96,7 @@ pub fn uqsub16(a: uint16x2_t, b: uint16x2_t) -> uint16x2_t {
             dsp_call!(arm_uqsub16, a, b)
         },
 
-        #[cfg(not(armv7em))]
+        #[cfg(not(all(armv7em,nightly)))]
         () =>  uint16x2_t(a.0.saturating_sub(b.0),
                           a.1.saturating_sub(b.1)),
     }

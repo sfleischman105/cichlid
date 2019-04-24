@@ -124,6 +124,7 @@ pub mod prelude {
     pub use crate::math::ScalingInt as _;
 
     pub use crate::color_util::ColorIterMut as _;
+    pub use crate::color_util::ColorSliceMut as _;
 
     pub use crate::color_util::GradientFill as _;
     pub use crate::color_util::GradientFillToInclusive as _;
