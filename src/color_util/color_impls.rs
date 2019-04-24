@@ -30,8 +30,6 @@ impl<'a> super::ColorSliceMut for &'a mut [ColorRGB] {
     }
 
     fn fade_to_black(self, fade_by: u8) {
-//        let scalar: u16 = 1 + fade_by as u16;
-//        self.iter_mut().for_each(|c| c.scale(fade_by));
         let raw_bytes: &mut [u8] = unsafe {rgb_as_raw_bytes(self.as_mut())};
         batch_scale_u8(raw_bytes, fade_by);
     }
@@ -39,15 +37,17 @@ impl<'a> super::ColorSliceMut for &'a mut [ColorRGB] {
     fn blend(self, other: ColorRGB, amount_of_other: u8) {
         let p_other: u16 = amount_of_other as u16;
         let p_this: u16 = (255 - amount_of_other) as u16;
-        let partials: [u16; 3] = [
-            other.r as u16 * p_other,
-            other.g as u16 * p_other,
-            other.b as u16 * p_other];
-        self.iter_mut().for_each(|p| {
-            p.r = (((p.r as u16 * p_this) + partials[0]) >> 8) as u8;
-            p.g = (((p.g as u16 * p_this) + partials[1]) >> 8) as u8;
-            p.b = (((p.b as u16 * p_this) + partials[2]) >> 8) as u8;
-        });
+
+        let partial_r = other.r as u16 * p_other;
+        let partial_g = other.g as u16 * p_other;
+        let partial_b = other.b as u16 * p_other;
+
+        self.iter_mut()
+            .for_each(|p| {
+                p.r = (((p.r as u16 * p_this) + partial_r) >> 8) as u8;
+                p.g = (((p.g as u16 * p_this) + partial_g) >> 8) as u8;
+                p.b = (((p.b as u16 * p_this) + partial_b) >> 8) as u8;
+            });
     }
 }
 
@@ -60,13 +60,13 @@ fn scale_post(i: u8, scale: u16) -> u8 {
     (((i as u16) * scale) >> 8) as u8
 }
 
-fn batch_scale_u8(x: &mut [u8], scale: u8) {
+#[doc(hidden)]
+#[inline(always)]
+pub fn batch_scale_u8(x: &mut [u8], scale: u8) {
     let len: usize = x.len();
     if len <= 8 {
         let scalar: u16 = (scale as u16) + 1;
-        for m in x.iter_mut() {
-            *m = scale_post(*m, scalar);
-        }
+        x.iter_mut().for_each(|m| *m = scale_post(*m, scalar));
     } else {
         let start = x.as_mut_ptr();
         unsafe {
@@ -76,13 +76,12 @@ fn batch_scale_u8(x: &mut [u8], scale: u8) {
     }
 }
 
-// Assumes length > 8
-// end is the pointer to the last byte
+// Assumes length > 8. End is the pointer to the last byte
 #[inline]
 unsafe fn batch_scale_ptr(mut start: *mut u8, mut end: *mut u8, scale: u8) {
-    debug_assert!((end as usize) - (start as usize) >= 4);
-
+    debug_assert!((end as usize) - (start as usize) >= 8);
     let scalar: u16 = (scale as u16) + 1;
+
     while (start as usize) % 4 != 0  {
         *start = scale_post(*start, scalar);
         start = start.add(1);
@@ -103,6 +102,7 @@ unsafe fn batch_scale_ptr(mut start: *mut u8, mut end: *mut u8, scale: u8) {
     }
 }
 
+
 #[inline]
 fn batch_scale_inner(x: u32, scalar: u32) -> u32 {
     let mut bytes_02: u32 = x & 0x00FF00FF;
@@ -122,7 +122,6 @@ fn batch_scale_inner(x: u32, scalar: u32) -> u32 {
 mod test {
     use crate::color_util::color_impls::{batch_scale_u8, scale_post, batch_scale_inner};
 
-
     fn rand_change(seed: &mut u64) -> u64 {
         *seed ^= *seed >> 12;
         *seed ^= *seed << 25;
@@ -134,52 +133,87 @@ mod test {
         ((x >> 15) ^ (x >> 40) ^ x) as u8
     }
 
-    fn fill_buffer(x: &mut [u8]) {
-        let mut i: u8 = 0;
-        for m in x.iter_mut() {
-            *m = i;
-            i = i.wrapping_add(1);
-        }
-    }
-
     #[test]
-    fn test_bytes_raw() {
-        let mut buffer = [0u8; 2048];
+    fn test_batch_scale_array() {
+        const BUF_LEN: usize = 2048;
+        let mut buffer = [0u8; BUF_LEN];
+        let mut buf_batch = [0u8; BUF_LEN];
+        let mut buf_reg = [0u8; BUF_LEN];
 
-        fill_buffer(&mut buffer);
-        let mut buf_batch = [0u8; 2048];
-        let mut buf_reg = [0u8; 2048];
+        buffer
+            .iter_mut()
+            .enumerate()
+            .for_each(|(i, p)| *p = i as u8);
 
         buf_batch.clone_from_slice(&mut buffer);
         buf_reg.clone_from_slice(&mut buffer);
 
         for scale in 0..=255 {
-            let scalar = (scale as u16) + 1;
             batch_scale_u8(&mut buf_batch, scale);
-            buf_reg.iter_mut().for_each(|v| *v = scale_post(*v, scalar));
-            buf_reg.iter().zip(buf_batch.iter()).enumerate().take(2390).for_each(|(i, bytes)| {
-                if bytes.0 != bytes.1 {
-                    panic!("i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
-                             i, i % 256, bytes.0,bytes.1,scale);
-                }
-            });
+
+            buf_reg.iter_mut()
+                .for_each(|v| *v = scale_post(*v, (scale as u16) + 1));
+
+            buf_reg.iter()
+                .zip(buf_batch.iter())
+                .enumerate()
+                .for_each(|(i, bytes)| {
+                    if bytes.0 != bytes.1 {
+                        panic!("i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
+                                 i, i % 256, bytes.0,bytes.1,scale);
+                    }
+                });
 
             buf_batch.clone_from_slice(&mut buffer);
             buf_reg.clone_from_slice(&mut buffer);
         }
     }
 
+    #[cfg(not(feature = "no-std"))]
     #[test]
-    fn test_bytes() {
-        let mut seed: u64 = 11140122341;
-        for _ in 0..40 {
-            rand_change(&mut seed);
+    fn test_batch_scale_many_buf_len() {
+        for it in 0..=5000 {
+            let buffer: Vec<u8> = (0..)
+                .take(it)
+                .map(|b| b as u8)
+                .collect();
+
+            let mut buf_batch = buffer.clone();
+            let mut buf_reg = buffer.clone();
+
+            for scale in 0..=255 {
+                batch_scale_u8(&mut buf_batch, scale);
+                buf_reg
+                    .iter_mut()
+                    .for_each(|v| *v = scale_post(*v, (scale as u16) + 1));
+
+                buf_reg
+                    .iter()
+                    .zip(buf_batch.iter())
+                    .enumerate()
+                    .for_each(|(i, bytes)| {
+                        if bytes.0 != bytes.1 {
+                            panic!("it: {}, i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
+                                   it, i, i % 256, bytes.0, bytes.1, scale);
+                        }
+                    });
+
+                buf_batch = buffer.clone();
+                buf_reg = buffer.clone();
+            }
         }
+    }
+
+    #[cfg(not(feature = "no-std"))]
+    #[test]
+    fn test_batch_scale_many_alignment() {
+        let mut seed: u64 = 11140122341;
+        (0..).take(40).for_each(|_| {rand_change(&mut seed);});
 
         for it in 30..=5000 {
             rand_change(&mut seed);
-            let numbers = 0..;
-            let buffer: Vec<u8> = numbers.take(it)
+            let buffer: Vec<u8> = (0..)
+                .take(it)
                 .map(|_| rand_change(&mut seed))
                 .map(|x| collapse_u64(x))
                 .collect();
@@ -188,57 +222,25 @@ mod test {
             let mut buf_reg = buffer.clone();
 
             for scale in 0..=255 {
-                let scalar = (scale as u16) + 1;
                 let post_end: usize = buf_reg.len() - ((it - 1) % 11);
 
                 batch_scale_u8(&mut buf_batch[(it % 4)..post_end], scale);
 
-                buf_reg[(it % 4)..post_end].iter_mut()
-                    .for_each(|v| *v = scale_post(*v, scalar));
+                buf_reg[(it % 4)..post_end]
+                    .iter_mut()
+                    .for_each(|v| *v = scale_post(*v, (scale as u16) + 1));
 
-                buf_reg.iter()
+                buf_reg
+                    .iter()
                     .zip(buf_batch.iter())
                     .enumerate()
                     .take(2390)
                     .for_each(|(i, bytes)| {
-                    if bytes.0 != bytes.1 {
-                        panic!("it: {}, i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
-                                 it, i, i % 256, bytes.0, bytes.1, scale);
-                    }
-                });
-
-                buf_batch = buffer.clone();
-                buf_reg = buffer.clone();
-            }
-        }
-    }
-
-    #[test]
-    fn test_bytes_set_iter() {
-        for it in 0..=5000 {
-            let numbers = 0..;
-            let buffer: Vec<u8> = numbers.take(it)
-                .map(|b| b as u8)
-                .collect();
-
-            let mut buf_batch = buffer.clone();
-            let mut buf_reg = buffer.clone();
-
-            for scale in 0..=255 {
-                let scalar = (scale as u16) + 1;
-                batch_scale_u8(&mut buf_batch, scale);
-                buf_reg.iter_mut()
-                    .for_each(|v| *v = scale_post(*v, scalar));
-
-                buf_reg.iter()
-                    .zip(buf_batch.iter())
-                    .enumerate()
-                    .for_each(|(i, bytes)| {
-                    if bytes.0 != bytes.1 {
-                        panic!("it: {}, i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
-                               it, i, i % 256, bytes.0, bytes.1, scale);
-                    }
-                });
+                        if bytes.0 != bytes.1 {
+                            panic!("it: {}, i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
+                                   it, i, i % 256, bytes.0, bytes.1, scale);
+                        }
+                    });
 
                 buf_batch = buffer.clone();
                 buf_reg = buffer.clone();

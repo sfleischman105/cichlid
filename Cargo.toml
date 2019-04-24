@@ -11,6 +11,7 @@ categories = ["no-std","embedded"]
 homepage =  "https://github.com/sfleischman105/cichlid"
 repository = "https://github.com/sfleischman105/cichlid"
 edition = "2018"
+build = "build.rs"
 
 [lib]
 name = "cichlid"
@@ -38,6 +39,13 @@ codegen-units = 1
 lto = true
 debug-assertions = false
 
+[profile.bench]
+opt-level = 3
+debug = false
+lto = true
+debug-assertions = false
+codegen-units = 1
+
 [profile.release]
 opt-level = 3
 debug = true
@@ -46,6 +54,7 @@ debug-assertions = false
 codegen-units = 1
 incremental = false
 overflow-checks = false
+
 
 #[[bench]]
 #name = "bench"

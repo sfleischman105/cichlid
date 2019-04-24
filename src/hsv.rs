@@ -486,7 +486,7 @@ mod test {
     fn hsv2rgb_rainbow_6h() {
         for h in (0..=255).step_by(42) {
             let hsv = HSV::new(h as u8, 255, 255);
-            let rgb: ColorRGB = ColorRGB::from(hsv);
+            let _rgb: ColorRGB = ColorRGB::from(hsv);
         }
     }
 
@@ -494,7 +494,7 @@ mod test {
     fn hsv2rgb_rainbow_256h() {
         for h in (0..=255).step_by(1) {
             let hsv = HSV::new(h as u8, 255, 255);
-            let rgb: ColorRGB = ColorRGB::from(hsv);
+            let _rgb: ColorRGB = ColorRGB::from(hsv);
         }
     }
 
