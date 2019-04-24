@@ -120,7 +120,7 @@ fn batch_scale_inner(x: u32, scalar: u32) -> u32 {
 
 #[cfg(test)]
 mod test {
-    use crate::color_util::color_impls::{batch_scale_u8, scale_post, batch_scale_inner};
+    use crate::color_util::color_impls::{batch_scale_u8, scale_post};
 
     fn rand_change(seed: &mut u64) -> u64 {
         *seed ^= *seed >> 12;

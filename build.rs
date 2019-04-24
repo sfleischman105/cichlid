@@ -1,5 +1,4 @@
-use std::path::PathBuf;
-use std::{env, fs};
+use std::{env};
 
 fn main() {
     let target = env::var("TARGET").unwrap();

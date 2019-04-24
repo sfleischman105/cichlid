@@ -20,8 +20,9 @@ os:
 
 script:
   - cargo build --verbose
-  - cargo build --features=no-std
   - cargo test --release
+  - cargo build --features=no-std
+  - cargo test --features=no-std --release
 
 after_success:
   - if [ "$TRAVIS_RUST_VERSION" == "nightly" ]; then

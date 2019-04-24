@@ -21,6 +21,18 @@ fn create_rand_rgb_vec(rng: &mut u64, amt: usize) -> Vec<ColorRGB> {
 }
 
 #[bench]
+fn bench_fade_very_large_batch(b: &mut Bencher) {
+    let f = |slice: &mut [ColorRGB], fade: u8| {slice.fade_to_black(fade)};
+    bench_fade_very_large(b, f);
+}
+
+#[bench]
+fn bench_fade_very_large_scale(b: &mut Bencher) {
+    let f = |slice: &mut [ColorRGB], fade: u8| {slice.iter_mut().for_each(|p| p.scale(fade))};
+    bench_fade_very_large(b, f);
+}
+
+#[bench]
 fn bench_fade_large_batch(b: &mut Bencher) {
     let f = |slice: &mut [ColorRGB], fade: u8| {slice.fade_to_black(fade)};
     bench_fade_large(b, f);
@@ -59,6 +71,16 @@ fn bench_fade_small<F: FnMut(&mut [ColorRGB], u8)>(b: &mut Bencher, f: F) {
     let mut strips: Vec<Vec<ColorRGB>> = (2..)
         .take(31)
         .map(|amt| create_rand_rgb_vec(&mut seed, (amt % 8) + (amt + 1 / 2)))
+        .collect();
+    inner_bench_fade_over_vec(b, &mut strips, f);
+}
+
+fn bench_fade_very_large<F: FnMut(&mut [ColorRGB], u8)>(b: &mut Bencher, f: F) {
+    let mut seed = 1002784619;
+    let mut strips: Vec<Vec<ColorRGB>> = (259..)
+        .step_by(1024)
+        .take(5)
+        .map(|amt| create_rand_rgb_vec(&mut seed, amt))
         .collect();
     inner_bench_fade_over_vec(b, &mut strips, f);
 }
