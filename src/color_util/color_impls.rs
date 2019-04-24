@@ -5,11 +5,43 @@ use std::slice;
 
 use crate::ColorRGB;
 
+// Developer note:
+//
+// A specific trait is created for `&mut [ColorRGB]` rather than just using `ColorIterMut`,
+// and having it be generic over `IntoIter<Item = &mut ColorRGB>`. This mostly because
+// we can optimize methods if they are over an array of elements, rather than being generic
+// over an iterator. Specialization would otherwise be used, but is not yet stable.
+//
+// Generally, `ColorIterMut` methods are those that are write only modification of each
+// ColorRGB, while `ColorSliceMut` is for methods requiring both reading and writing.
+// ColorSliceMut also helps optimize array accesses due the natural alignment of
+// ColorRGBs. Being an awkward alignment of 24 bits (3 bytes), Its impossible to completely
+// load a ColorRGB into memory at once without an unaligned load (slow) or also loading
+// part of another ColorRGB.
+
 impl<'a, T: Sized + IntoIterator<Item = &'a mut ColorRGB>> super::ColorIterMut for T {
     fn fill(self, color: ColorRGB) {
         self.into_iter().for_each(|p| *p = color);
     }
 }
+
+// Theory of Operation:
+//
+// fade_to_black(u8) - the same as applying rgb.scale(fade);
+// The optimization is based on scaling 4 bytes at once, rather than individually (as would
+// be accomplished with a regular iterator). Estimating, it seems this optimized way of scaling
+// takes 2.25 per byte (11 instr per 4 bytes), including a single load and store. The old way
+// would take around 4 instructions per byte, including the load/store.
+//
+// However, this relies on the array being 4 byte aligned. The beginning and end of the array
+// are reduced to fit within a 4 byte alignment. These ends have to be individually scaled,
+// but that's alright, as max 3 bytes will be manually scaled.
+//
+// This optimization is mostly for Cortex-M processors, but seems to work otherwise.
+// Benchmarking on a x86_64 machine shows that batch scaling is faster in all cases without
+// SIMD optimizations, and almost always faster with SIMD extensions
+// enabled (RUSTFLAGS=-Ctarget-cpu=native). The one place where regular scaling is faster
+// seems to be in very small arrays (less than 16 ColorRGBs).
 
 impl<'a> super::ColorSliceMut for &'a mut [ColorRGB] {
     fn blur(self, blur_amount: u8) {
@@ -30,8 +62,12 @@ impl<'a> super::ColorSliceMut for &'a mut [ColorRGB] {
     }
 
     fn fade_to_black(self, fade_by: u8) {
-        let raw_bytes: &mut [u8] = unsafe {rgb_as_raw_bytes(self.as_mut())};
-        batch_scale_u8(raw_bytes, fade_by);
+        let len: usize = self.len();
+        let raw_bytes: &mut [u8] = unsafe {
+            let ptr = self.as_mut().as_mut_ptr() as *mut u8;
+            slice::from_raw_parts_mut(ptr, len * 3)
+        };
+        batch_scale_bytes(raw_bytes, fade_by);
     }
 
     fn blend(self, other: ColorRGB, amount_of_other: u8) {
@@ -51,20 +87,23 @@ impl<'a> super::ColorSliceMut for &'a mut [ColorRGB] {
     }
 }
 
-unsafe fn rgb_as_raw_bytes(rgbs: &mut [ColorRGB]) -> &mut [u8] {
-    slice::from_raw_parts_mut(rgbs.as_mut_ptr() as *mut u8, rgbs.len() * 3)
-}
-
 #[inline(always)]
 fn scale_post(i: u8, scale: u16) -> u8 {
     (((i as u16) * scale) >> 8) as u8
 }
 
+
+/// Scales down an entire array by `scale`.
+///
+/// Rather than scaling each byte individually, scaling is done to two bytes at ones.
+/// See the method `batch_scale_inner` for how this works, but practically this seems to
+/// be around twice as fast as a iterating with `ColorRGB::scale(u8)`.
 #[doc(hidden)]
-#[inline(always)]
-pub fn batch_scale_u8(x: &mut [u8], scale: u8) {
+#[inline]
+pub fn batch_scale_bytes(x: &mut [u8], scale: u8) {
     let len: usize = x.len();
     if len <= 8 {
+        // Cutoff where its just faster to manually scale
         let scalar: u16 = (scale as u16) + 1;
         x.iter_mut().for_each(|m| *m = scale_post(*m, scalar));
     } else {
@@ -76,10 +115,10 @@ pub fn batch_scale_u8(x: &mut [u8], scale: u8) {
     }
 }
 
-// Assumes length > 8. End is the pointer to the last byte
+// Assumes length > 6. End is the pointer to the last byte
 #[inline]
 unsafe fn batch_scale_ptr(mut start: *mut u8, mut end: *mut u8, scale: u8) {
-    debug_assert!((end as usize) - (start as usize) >= 8);
+    debug_assert!((end as usize) - (start as usize) > 6);
     let scalar: u16 = (scale as u16) + 1;
 
     while (start as usize) % 4 != 0  {
@@ -97,14 +136,14 @@ unsafe fn batch_scale_ptr(mut start: *mut u8, mut end: *mut u8, scale: u8) {
 
     while start as usize != end as usize {
         let word_ptr: *mut u32 = start as *mut u32;
-        *word_ptr = batch_scale_inner(*word_ptr, scalar);
+        *word_ptr = batch_scale(*word_ptr, scalar);
         start = start.add(4);
     }
 }
 
 
-#[inline]
-fn batch_scale_inner(x: u32, scalar: u32) -> u32 {
+#[inline(always)]
+fn batch_scale(x: u32, scalar: u32) -> u32 {
     let mut bytes_02: u32 = x & 0x00FF00FF;
     let mut bytes_13: u32 = x & 0xFF00FF00;
     bytes_13 = bytes_13 >> 8;
@@ -120,7 +159,7 @@ fn batch_scale_inner(x: u32, scalar: u32) -> u32 {
 
 #[cfg(test)]
 mod test {
-    use crate::color_util::color_impls::{batch_scale_u8, scale_post};
+    use crate::color_util::color_impls::{batch_scale_bytes, scale_post};
 
     fn rand_change(seed: &mut u64) -> u64 {
         *seed ^= *seed >> 12;
@@ -149,7 +188,7 @@ mod test {
         buf_reg.clone_from_slice(&mut buffer);
 
         for scale in 0..=255 {
-            batch_scale_u8(&mut buf_batch, scale);
+            batch_scale_bytes(&mut buf_batch, scale);
 
             buf_reg.iter_mut()
                 .for_each(|v| *v = scale_post(*v, (scale as u16) + 1));
@@ -182,7 +221,7 @@ mod test {
             let mut buf_reg = buffer.clone();
 
             for scale in 0..=255 {
-                batch_scale_u8(&mut buf_batch, scale);
+                batch_scale_bytes(&mut buf_batch, scale);
                 buf_reg
                     .iter_mut()
                     .for_each(|v| *v = scale_post(*v, (scale as u16) + 1));
@@ -225,7 +264,7 @@ mod test {
                 let post_start: usize = (it / 1) % 4;
                 let post_end: usize = buf_reg.len() - ((it - 1) % 11);
 
-                batch_scale_u8(&mut buf_batch[post_start..post_end], scale);
+                batch_scale_bytes(&mut buf_batch[post_start..post_end], scale);
 
                 buf_reg[post_start..post_end]
                     .iter_mut()

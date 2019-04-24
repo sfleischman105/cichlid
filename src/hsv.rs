@@ -475,12 +475,7 @@ impl From<[u8; 3]> for HSV {
 
 #[cfg(test)]
 mod test {
-    use crate::hsv::hue_to_full_rgb;
     use crate::{ColorRGB, HSV};
-
-    fn into_360(n: u8) -> u32 {
-        ((n as u32) * 360) >> 8
-    }
 
     #[test]
     fn hsv2rgb_rainbow_6h() {
@@ -517,7 +512,6 @@ mod test {
                 for v in (0..=255).step_by(15) {
                     let hsv = HSV::new(h as u8, s as u8, v as u8);
                     let _rgb: ColorRGB = ColorRGB::from(hsv);
-                    //println!("hsv ({},{},{}) -> r: {}, g: {}, b: {}\n", h, s, v, rgb.r, rgb.g, rgb.b);
                 }
             }
         }

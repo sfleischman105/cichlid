@@ -69,7 +69,7 @@ fn bench_fade_small<F: FnMut(&mut [ColorRGB], u8)>(b: &mut Bencher, f: F) {
     let mut seed = 500184610019991;
     let mut strips: Vec<Vec<ColorRGB>> = (2..)
         .take(31)
-        .map(|amt| create_rand_rgb_vec(&mut seed, (amt % 8) + (amt + 1 / 2)))
+        .map(|amt| create_rand_rgb_vec(&mut seed, (amt % 8) + ((amt + 1) / 2)))
         .collect();
     inner_bench_fade_over_vec(b, &mut strips, f);
 }

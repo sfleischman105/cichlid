@@ -44,6 +44,7 @@ opt-level = 3
 debug = false
 lto = true
 debug-assertions = false
+overflow-checks = false
 codegen-units = 1
 
 [profile.release]

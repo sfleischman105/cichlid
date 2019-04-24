@@ -301,7 +301,6 @@ impl From<HueDirection> for GradientDirection {
 #[cfg(test)]
 mod test {
     use super::*;
-    use crate::HSV;
 
     #[test]
     fn blur_test() {
@@ -339,7 +338,6 @@ mod test {
     #[test]
     fn blur_test_long() {
         let mut arr = [ColorRGB::BlueViolet; 256];
-
         for _ in 0..4 {
             arr.blur(64);
         }
