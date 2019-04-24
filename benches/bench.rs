@@ -6,6 +6,14 @@ extern crate test;
 use test::{Bencher,black_box};
 use cichlid::{ColorRGB, prelude::*};
 
+#[inline(always)]
+fn inplace_rgb_scale(rgb: ColorRGB, scale: u16) -> ColorRGB {
+    ColorRGB {
+        r: (((rgb.r as u16) * scale) >> 8) as u8,
+        g: (((rgb.g as u16) * scale) >> 8) as u8,
+        b: (((rgb.b as u16) * scale) >> 8) as u8,
+    }
+}
 
 fn rand_change(seed: &mut u64) -> u64 {
     *seed ^= *seed >> 12;
@@ -28,7 +36,10 @@ fn bench_fade_very_large_batch(b: &mut Bencher) {
 
 #[bench]
 fn bench_fade_very_large_scale(b: &mut Bencher) {
-    let f = |slice: &mut [ColorRGB], fade: u8| {slice.iter_mut().for_each(|p| p.scale(fade))};
+    let f = |slice: &mut [ColorRGB], fade: u8| {
+        let scalar: u16 = (fade as u16) + 1;
+        slice.iter_mut().for_each(|p| *p = inplace_rgb_scale(*p, scalar))
+    };
     bench_fade_very_large(b, f);
 }
 
@@ -40,7 +51,10 @@ fn bench_fade_large_batch(b: &mut Bencher) {
 
 #[bench]
 fn bench_fade_large_scale(b: &mut Bencher) {
-    let f = |slice: &mut [ColorRGB], fade: u8| {slice.iter_mut().for_each(|p| p.scale(fade))};
+    let f = |slice: &mut [ColorRGB], fade: u8| {
+        let scalar: u16 = (fade as u16) + 1;
+        slice.iter_mut().for_each(|p| *p = inplace_rgb_scale(*p, scalar))
+    };
     bench_fade_large(b, f);
 }
 
@@ -52,7 +66,10 @@ fn bench_fade_small_batch(b: &mut Bencher) {
 
 #[bench]
 fn bench_fade_small_scale(b: &mut Bencher) {
-    let f = |slice: &mut [ColorRGB], fade: u8| {slice.iter_mut().for_each(|p| p.scale(fade))};
+    let f = |slice: &mut [ColorRGB], fade: u8| {
+        let scalar: u16 = (fade as u16) + 1;
+        slice.iter_mut().for_each(|p| *p = inplace_rgb_scale(*p, scalar))
+    };
     bench_fade_small(b, f);
 }
 
