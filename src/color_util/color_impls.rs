@@ -3,7 +3,7 @@ use core::slice;
 #[cfg(not(feature = "no-std"))]
 use std::slice;
 
-use crate::{ColorRGB, HSV};
+use crate::ColorRGB;
 
 impl<'a, T: Sized + IntoIterator<Item = &'a mut ColorRGB>> super::ColorIterMut for T {
     fn fill(self, color: ColorRGB) {
@@ -210,7 +210,7 @@ mod test {
         let mut seed: u64 = 11140122341;
         (0..).take(40).for_each(|_| {rand_change(&mut seed);});
 
-        for it in 30..=5000 {
+        for it in 30..=4903 {
             rand_change(&mut seed);
             let buffer: Vec<u8> = (0..)
                 .take(it)
@@ -222,11 +222,12 @@ mod test {
             let mut buf_reg = buffer.clone();
 
             for scale in 0..=255 {
+                let post_start: usize = (it / 1) % 4;
                 let post_end: usize = buf_reg.len() - ((it - 1) % 11);
 
-                batch_scale_u8(&mut buf_batch[(it % 4)..post_end], scale);
+                batch_scale_u8(&mut buf_batch[post_start..post_end], scale);
 
-                buf_reg[(it % 4)..post_end]
+                buf_reg[post_start..post_end]
                     .iter_mut()
                     .for_each(|v| *v = scale_post(*v, (scale as u16) + 1));
 

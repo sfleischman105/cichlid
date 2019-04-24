@@ -19,8 +19,8 @@ os:
   - linux
 
 script:
-  - cargo build
+  - cargo build --verbose
   - cargo build --features=no-std
-  - cargo test
+  - cargo test --release
   - cargo bench
 

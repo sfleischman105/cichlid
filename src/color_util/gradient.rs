@@ -1,6 +1,7 @@
 //! Color gradient functions and impls.
 //!
 //! Creates smooth transitions between any two colors for any number of steps.
+//#![allow(unused_imports)]
 
 #[cfg(feature = "no-std")]
 use core::iter::ExactSizeIterator;
@@ -152,7 +153,6 @@ pub fn rgb_gradient<'a, C: 'a + From<ColorRGB>, I: IntoIterator<Item = &'a mut C
 
 #[cfg(test)]
 mod test {
-    use super::*;
     use crate::color_util::*;
     use crate::HSV;
 

@@ -1,10 +1,14 @@
 //! Architecture specific math functions
+#![allow(dead_code)]
 
+#[allow(unused_imports)]
 #[cfg(feature = "no-std")]
 use core::mem;
+#[allow(unused_imports)]
 #[cfg(not(feature = "no-std"))]
 use std::mem;
 
+#[cfg(all(armv7em,nightly))]
 macro_rules! dsp_call {
     ($name:expr, $a:expr, $b:expr) => {
         mem::transmute($name(mem::transmute($a), mem::transmute($b)))
