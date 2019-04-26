@@ -105,6 +105,7 @@ pub trait ColorIterMut: Sized {
     }
 }
 
+/// Optimized methods for iterating over `&mut [ColorRGB]`.
 pub trait ColorSliceMut: Sized {
     /// Blurs colors by `blur_amount`.
     ///
@@ -120,6 +121,7 @@ pub trait ColorSliceMut: Sized {
     /// of which itself is the numerator.
     fn fade_to_black(self, fade_by: u8);
 
+    /// Applies `ColorRGB::blend()` to the entire slice.
     fn blend(self, other: ColorRGB, amount_of_other: u8);
 }
 

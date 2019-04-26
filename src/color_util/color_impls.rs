@@ -9,7 +9,6 @@ use core::mem;
 use std::mem;
 
 use crate::ColorRGB;
-use std::slice::from_raw_parts_mut;
 
 // Developer note:
 //
@@ -123,9 +122,9 @@ fn split_align32(x: &mut [u8]) -> (&mut [u8], &mut [u32], &mut [u8]) {
     let ptr = x.as_mut_ptr();
     let (a, b, c) = aligned_split_u32(ptr as usize, len);
     unsafe {
-        let cap = from_raw_parts_mut(ptr, a);
-        let mid = from_raw_parts_mut(ptr.add(a) as *mut u32, b / 4);
-        let end = from_raw_parts_mut(ptr.add(a + b), c);
+        let cap = slice::from_raw_parts_mut(ptr, a);
+        let mid = slice::from_raw_parts_mut(ptr.add(a) as *mut u32, b / 4);
+        let end = slice::from_raw_parts_mut(ptr.add(a + b), c);
         (cap, mid, end)
     }
 }
