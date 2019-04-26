@@ -3,7 +3,13 @@ use core::slice;
 #[cfg(not(feature = "no-std"))]
 use std::slice;
 
+#[cfg(feature = "no-std")]
+use core::mem;
+#[cfg(not(feature = "no-std"))]
+use std::mem;
+
 use crate::ColorRGB;
+use std::slice::from_raw_parts_mut;
 
 // Developer note:
 //
@@ -41,7 +47,10 @@ impl<'a, T: Sized + IntoIterator<Item = &'a mut ColorRGB>> super::ColorIterMut f
 // Benchmarking on a x86_64 machine shows that batch scaling is faster in all cases without
 // SIMD optimizations, and almost always faster with SIMD extensions
 // enabled (RUSTFLAGS=-Ctarget-cpu=native). The one place where regular scaling is faster
-// seems to be in very small arrays (less than 16 ColorRGBs).
+// seems to be in very small arrays (less than 12 u8).
+//
+// ARM has a Load Multiple instruction, (LDM Rn, {<reglist>}), which hopefully this is
+// optimized down to.
 
 impl<'a> super::ColorSliceMut for &'a mut [ColorRGB] {
     fn blur(self, blur_amount: u8) {
@@ -92,7 +101,6 @@ fn scale_post(i: u8, scale: u16) -> u8 {
     (((i as u16) * scale) >> 8) as u8
 }
 
-
 /// Scales down an entire array by `scale`.
 ///
 /// Rather than scaling each byte individually, scaling is done to two bytes at ones.
@@ -102,43 +110,39 @@ fn scale_post(i: u8, scale: u16) -> u8 {
 #[inline]
 pub fn batch_scale_bytes(x: &mut [u8], scale: u8) {
     let len: usize = x.len();
-    if len <= 8 {
-        // Cutoff where its just faster to manually scale
-        let scalar: u16 = (scale as u16) + 1;
-        x.iter_mut().for_each(|m| *m = scale_post(*m, scalar));
-    } else {
-        let start = x.as_mut_ptr();
-        unsafe {
-            let end = start.add(len - 1);
-            batch_scale_ptr(start, end, scale);
-        }
+    let scalar: u16 = (scale as u16) + 1;
+    let (head, mid, tail) = split_align32(x);
+    head.iter_mut().for_each(|m| *m = scale_post(*m, scalar));
+    mid.iter_mut().for_each(|m| *m = batch_scale(*m, scalar as u32));
+    tail.iter_mut().for_each(|m| *m = scale_post(*m, scalar));
+}
+
+#[inline(always)]
+fn split_align32(x: &mut [u8]) -> (&mut [u8], &mut [u32], &mut [u8]) {
+    let len = x.len();
+    let ptr = x.as_mut_ptr();
+    let (a, b, c) = aligned_split_u32(ptr as usize, len);
+    unsafe {
+        let cap = from_raw_parts_mut(ptr, a);
+        let mid = from_raw_parts_mut(ptr.add(a) as *mut u32, b / 4);
+        let end = from_raw_parts_mut(ptr.add(a + b), c);
+        (cap, mid, end)
     }
 }
 
-// Assumes length > 6. End is the pointer to the last byte
-#[inline]
-unsafe fn batch_scale_ptr(mut start: *mut u8, mut end: *mut u8, scale: u8) {
-    debug_assert!((end as usize) - (start as usize) > 6);
-    let scalar: u16 = (scale as u16) + 1;
-
-    while (start as usize) % 4 != 0  {
-        *start = scale_post(*start, scalar);
-        start = start.add(1);
+#[inline(always)]
+fn aligned_split_u32(ptr: usize, len: usize) -> (usize, usize, usize) {
+    if len <= 3 {
+        return (len, 0, 0);
     }
-
-    while (end as usize) % 4 != 0b11 {
-        *end = scale_post(*end, scalar);
-        end = end.sub(1);
-    }
-
-    end = end.add(1);
-    let scalar: u32 = scalar as u32;
-
-    while start as usize != end as usize {
-        let word_ptr: *mut u32 = start as *mut u32;
-        *word_ptr = batch_scale(*word_ptr, scalar);
-        start = start.add(4);
-    }
+    let len_1 =(ptr.wrapping_sub(1) ^ 0b11) & 0b11;
+    let len_2 = (len - len_1) & !0b11;
+    let len_3 = (len - len_1) &  0b11;
+    debug_assert_eq!(len, len_1 + len_2 + len_3);
+    debug_assert_eq!(len_2 & 0b11, 0);
+    debug_assert!(len_1 <= 3);
+    debug_assert!(len_3 <= 3);
+    (len_1, len_2, len_3)
 }
 
 
