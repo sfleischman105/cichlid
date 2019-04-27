@@ -65,6 +65,8 @@
 
 pub mod color_impls;
 pub mod gradient;
+
+#[doc(hidden)]
 pub mod rainbow;
 
 use crate::{ColorRGB, HSV};
@@ -109,7 +111,41 @@ pub trait ColorIterMut: Sized {
     }
 }
 
-/// Optimized methods for iterating over `&mut [ColorRGB]`.
+/// Optimized methods for iterating over arrays and slices of `ColorRGB`s.
+///
+/// # Usage
+///
+/// Normally, to scale an array by a fixed amount, something like is done:
+///
+/// ```
+/// use cichlid::ColorRGB;
+/// let mut colors = [ColorRGB::Pink; 50];
+/// colors.iter_mut().for_each(|c| c.fade_to_black_by(200));
+/// ```
+///
+///
+/// But, when operating on arrays, it's often faster to operate on multiple values at once
+/// using custom SIMD functions. `ColorSliceMut::fade_to_black()` implements this internally,
+/// resulting in dimming that is twice as fast as the above method.
+///
+/// ```
+/// use cichlid::{prelude::*, ColorRGB};
+/// let mut colors = [ColorRGB::Pink; 50];
+/// colors.fade_to_black(200); // Much faster!
+/// ```
+///
+/// # Examples
+///
+/// ```
+/// use cichlid::{prelude::*, ColorRGB};
+///
+/// let mut colors = [ColorRGB::Purple; 50];
+/// colors.fade_to_black(50);
+///
+/// let color_slice = &mut colors[0..40];
+/// color_slice.blur(50);
+/// color_slice.blend(ColorRGB::Gold, 120);
+/// ```
 pub trait ColorSliceMut: Sized {
     /// Blurs colors by `blur_amount`.
     ///
@@ -119,10 +155,11 @@ pub trait ColorSliceMut: Sized {
     /// This method does not retain brightness. Blurring will slowly fade all the colors to black.
     fn blur(self, blur_amount: u8);
 
-    /// Fades all colors to black by the a fraction.
+    /// Fades all colors to black by a fraction.
     ///
     /// The `fade_by` parameter is interpreted as a fraction with a denominator of 255,
-    /// of which itself is the numerator.
+    /// of which itself is the numerator. A higher `fade_by` means the colors a larger fade,
+    /// while a lower `face_by` results in less dimmed colors.
     fn fade_to_black(self, fade_by: u8);
 
     /// Applies `ColorRGB::blend()` to the entire slice.

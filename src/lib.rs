@@ -71,11 +71,15 @@
 //! features = ["no-std"]
 //! ```
 //!
-//! # Feature flags
+//! # Low memory usage
 //!
 //! The `low-mem` feature creates a binary that is smaller due to relying less on in memory
 //! tables, preferring direct computation instead. The only drawback of this is a slight
 //! speed decrease.
+//!
+//! # Nightly features
+//!
+//! To use some unstable nightly features and optimizations, use the `nightly` feature flag.
 //!
 //! # Acknowledgements
 //!

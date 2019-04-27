@@ -1,3 +1,5 @@
+//! Functions and impls for ColorIterMut and ColorSliceMut.
+
 #[cfg(feature = "no-std")]
 use core::slice;
 #[cfg(not(feature = "no-std"))]
@@ -70,7 +72,7 @@ impl<'a> super::ColorSliceMut for &'a mut [ColorRGB] {
             let ptr = self.as_mut().as_mut_ptr() as *mut u8;
             slice::from_raw_parts_mut(ptr, len * 3)
         };
-        batch_scale_bytes(raw_bytes, fade_by);
+        batch_scale_bytes(raw_bytes, 255 - fade_by);
     }
 
     fn blend(self, other: ColorRGB, amount_of_other: u8) {
@@ -99,7 +101,6 @@ fn scale_post(i: u8, scale: u16) -> u8 {
 /// Rather than scaling each byte individually, scaling is done to two bytes at ones.
 /// See the method `batch_scale_inner` for how this works, but practically this seems to
 /// be around twice as fast as a iterating with `ColorRGB::scale(u8)`.
-#[doc(hidden)]
 #[inline]
 pub fn batch_scale_bytes(x: &mut [u8], scale: u8) {
     let scalar: u16 = (scale as u16) + 1;
