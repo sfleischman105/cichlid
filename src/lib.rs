@@ -85,7 +85,6 @@
 
 // TODO: SERDE
 #![cfg_attr(feature = "no-std", no_std)]
-
 #![cfg_attr(feature = "nightly", feature(link_llvm_intrinsics))]
 //#![feature(link_llvm_intrinsics)]
 
@@ -112,16 +111,16 @@ pub mod rgb;
 
 pub use crate::color_util::GradientDirection;
 pub use crate::hsv::HSV;
-pub use crate::power_mgmt::{DefaultPowerEstimator, PowerEstimator};
-pub use crate::rgb::ColorRGB;
 pub use crate::math::{ScalingInt, Trig};
+pub use crate::power_mgmt::{DefaultPowerEstimator, PowerEstimator};
 pub use crate::prelude::*;
+pub use crate::rgb::ColorRGB;
 
 pub mod prelude {
     //! Easy importing of integer and color auto traits.
 
-    pub use crate::math::Trig as _;
     pub use crate::math::ScalingInt as _;
+    pub use crate::math::Trig as _;
 
     pub use crate::color_util::ColorIterMut as _;
     pub use crate::color_util::ColorSliceMut as _;

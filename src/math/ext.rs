@@ -8,7 +8,7 @@ use core::mem;
 #[cfg(not(feature = "no-std"))]
 use std::mem;
 
-#[cfg(all(armv7em,nightly))]
+#[cfg(all(armv7em, nightly))]
 macro_rules! dsp_call {
     ($name:expr, $a:expr, $b:expr) => {
         mem::transmute($name(mem::transmute($a), mem::transmute($b)))
@@ -29,7 +29,7 @@ pub struct uint16x2_t(pub u16, pub u16);
 #[inline(always)]
 pub fn uqadd8(a: uint8x4_t, b: uint8x4_t) -> uint8x4_t {
     match () {
-        #[cfg(all(armv7em,nightly))]
+        #[cfg(all(armv7em, nightly))]
         () => unsafe {
             extern "C" {
                 #[link_name = "llvm.arm.uqadd8"]
@@ -38,11 +38,13 @@ pub fn uqadd8(a: uint8x4_t, b: uint8x4_t) -> uint8x4_t {
             dsp_call!(arm_uqadd8, a, b)
         },
 
-        #[cfg(not(all(armv7em,nightly)))]
-        () =>  uint8x4_t(a.0.saturating_add(b.0),
-                         a.1.saturating_add(b.1),
-                         a.2.saturating_add(b.2),
-                         a.3.saturating_add(b.3)),
+        #[cfg(not(all(armv7em, nightly)))]
+        () => uint8x4_t(
+            a.0.saturating_add(b.0),
+            a.1.saturating_add(b.1),
+            a.2.saturating_add(b.2),
+            a.3.saturating_add(b.3),
+        ),
     }
 }
 
@@ -50,7 +52,7 @@ pub fn uqadd8(a: uint8x4_t, b: uint8x4_t) -> uint8x4_t {
 #[inline(always)]
 pub fn uqadd16(a: uint16x2_t, b: uint16x2_t) -> uint16x2_t {
     match () {
-        #[cfg(all(armv7em,nightly))]
+        #[cfg(all(armv7em, nightly))]
         () => unsafe {
             extern "C" {
                 #[link_name = "llvm.arm.uqadd16"]
@@ -59,9 +61,8 @@ pub fn uqadd16(a: uint16x2_t, b: uint16x2_t) -> uint16x2_t {
             dsp_call!(arm_uqadd16, a, b)
         },
 
-        #[cfg(not(all(armv7em,nightly)))]
-        () =>  uint16x2_t(a.0.saturating_add(b.0),
-                          a.1.saturating_add(b.1)),
+        #[cfg(not(all(armv7em, nightly)))]
+        () => uint16x2_t(a.0.saturating_add(b.0), a.1.saturating_add(b.1)),
     }
 }
 
@@ -69,7 +70,7 @@ pub fn uqadd16(a: uint16x2_t, b: uint16x2_t) -> uint16x2_t {
 #[inline(always)]
 pub fn uqsub8(a: uint8x4_t, b: uint8x4_t) -> uint8x4_t {
     match () {
-        #[cfg(all(armv7em,nightly))]
+        #[cfg(all(armv7em, nightly))]
         () => unsafe {
             extern "C" {
                 #[link_name = "llvm.arm.uqsub8"]
@@ -78,11 +79,13 @@ pub fn uqsub8(a: uint8x4_t, b: uint8x4_t) -> uint8x4_t {
             dsp_call!(arm_uqsub8, a, b)
         },
 
-        #[cfg(not(all(armv7em,nightly)))]
-        () =>  uint8x4_t(a.0.saturating_sub(b.0),
-                         a.1.saturating_sub(b.1),
-                         a.2.saturating_sub(b.2),
-                         a.3.saturating_sub(b.3)),
+        #[cfg(not(all(armv7em, nightly)))]
+        () => uint8x4_t(
+            a.0.saturating_sub(b.0),
+            a.1.saturating_sub(b.1),
+            a.2.saturating_sub(b.2),
+            a.3.saturating_sub(b.3),
+        ),
     }
 }
 
@@ -91,7 +94,7 @@ pub fn uqsub8(a: uint8x4_t, b: uint8x4_t) -> uint8x4_t {
 #[inline(always)]
 pub fn uqsub16(a: uint16x2_t, b: uint16x2_t) -> uint16x2_t {
     match () {
-        #[cfg(all(armv7em,nightly))]
+        #[cfg(all(armv7em, nightly))]
         () => unsafe {
             extern "C" {
                 #[link_name = "llvm.arm.uqsub16"]
@@ -100,8 +103,7 @@ pub fn uqsub16(a: uint16x2_t, b: uint16x2_t) -> uint16x2_t {
             dsp_call!(arm_uqsub16, a, b)
         },
 
-        #[cfg(not(all(armv7em,nightly)))]
-        () =>  uint16x2_t(a.0.saturating_sub(b.0),
-                          a.1.saturating_sub(b.1)),
+        #[cfg(not(all(armv7em, nightly)))]
+        () => uint16x2_t(a.0.saturating_sub(b.0), a.1.saturating_sub(b.1)),
     }
 }

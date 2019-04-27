@@ -10,13 +10,12 @@ use core::fmt;
 #[cfg(not(feature = "no-std"))]
 use std::fmt;
 
-
 #[cfg(feature = "no-std")]
 use core::mem;
 #[cfg(not(feature = "no-std"))]
 use std::mem;
 
-use crate::math::ext::{uint8x4_t,uqadd8,uqsub8};
+use crate::math::ext::{uint8x4_t, uqadd8, uqsub8};
 
 #[cfg(feature = "no-std")]
 use core::ops::{
@@ -220,7 +219,7 @@ impl AddAssign for ColorRGB {
     #[inline(always)]
     fn add_assign(&mut self, rhs: ColorRGB) {
         let other = unsafe { uint8x4_t(rhs.r, rhs.g, rhs.b, mem::uninitialized()) };
-        let us =  unsafe { uint8x4_t(self.r, self.g, self.b, mem::uninitialized()) };
+        let us = unsafe { uint8x4_t(self.r, self.g, self.b, mem::uninitialized()) };
         let qadd = uqadd8(us, other);
         *self = ColorRGB {
             r: qadd.0,
@@ -242,7 +241,7 @@ impl SubAssign for ColorRGB {
     #[inline(always)]
     fn sub_assign(&mut self, rhs: ColorRGB) {
         let other = unsafe { uint8x4_t(rhs.r, rhs.g, rhs.b, mem::uninitialized()) };
-        let us =  unsafe { uint8x4_t(self.r, self.g, self.b, mem::uninitialized()) };
+        let us = unsafe { uint8x4_t(self.r, self.g, self.b, mem::uninitialized()) };
         let qsub = uqsub8(us, other);
         *self = ColorRGB {
             r: qsub.0,
@@ -322,7 +321,7 @@ impl Neg for ColorRGB {
     #[inline(always)]
     fn neg(self) -> ColorRGB {
         let rev = unsafe { uint8x4_t(255, 255, 255, mem::uninitialized()) };
-        let us =  unsafe { uint8x4_t(self.r, self.g, self.b, mem::uninitialized()) };
+        let us = unsafe { uint8x4_t(self.r, self.g, self.b, mem::uninitialized()) };
         let qsub = uqsub8(rev, us);
         ColorRGB {
             r: qsub.0,

@@ -7,9 +7,9 @@ use core::fmt;
 #[cfg(not(feature = "no-std"))]
 use std::fmt;
 
+use crate::math::ScalingInt;
 use crate::math::*;
 use crate::ColorRGB;
-use crate::math::ScalingInt;
 
 const HSV_SECTION_3: u8 = 0x40;
 
@@ -22,7 +22,7 @@ pub fn hue_to_full_rgb(hue: u8) -> ColorRGB {
 /// Represents a color encoded in `(hue, saturation, value)` format.
 ///
 /// This structure is useful for a more human-centered approach to thinking
-/// about color. 
+/// about color.
 #[derive(Copy, Clone, Default, Eq, PartialEq, Debug, Hash)]
 pub struct HSV {
     pub h: u8,

@@ -25,37 +25,36 @@
 // TODO: SIMD this stuff https://doc.rust-lang.org/core/arch/arm/index.html
 // https://doc.rust-lang.org/edition-guide/rust-2018/simd-for-faster-computing.html
 
-pub(crate) mod lerp;
 pub(crate) mod ext;
+pub(crate) mod lerp;
 pub mod trig;
 
-pub use math_u8_impls::scale as scale8;
-pub use math_u8_impls::scale_video as scale8_video;
-pub use math_u8_impls::dim_raw as dim8_raw;
-pub use math_u8_impls::dim_video as dim8_video;
-pub use math_u8_impls::dim_lin as dim8_lin;
-pub use math_u8_impls::brighten_raw as brighten8_raw;
-pub use math_u8_impls::brighten_video as brighten8_video;
-pub use math_u8_impls::brighten_lin as brighten8_lin;
-pub use math_u8_impls::nscale as nscale8;
-pub use math_u8_impls::nscale_x2 as nscale8x2;
-pub use math_u8_impls::nscale_x3 as nscale8x3;
-pub use math_u8_impls::nscale_x4 as nscale8x4;
-pub use math_u8_impls::blend as blend8;
-pub use math_u16_impls::scale as scale16;
-pub use math_u16_impls::scale_video as scale16_video;
-pub use math_u16_impls::dim_raw as dim16_raw;
-pub use math_u16_impls::dim_video as dim16_video;
-pub use math_u16_impls::dim_lin as dim16_lin;
+pub use math_u16_impls::blend as blend16;
+pub use math_u16_impls::brighten_lin as brighten16_lin;
 pub use math_u16_impls::brighten_raw as brighten16_raw;
 pub use math_u16_impls::brighten_video as brighten16_video;
-pub use math_u16_impls::brighten_lin as brighten16_lin;
+pub use math_u16_impls::dim_lin as dim16_lin;
+pub use math_u16_impls::dim_raw as dim16_raw;
+pub use math_u16_impls::dim_video as dim16_video;
 pub use math_u16_impls::nscale as nscale16;
 pub use math_u16_impls::nscale_x2 as nscale16x2;
 pub use math_u16_impls::nscale_x3 as nscale16x3;
 pub use math_u16_impls::nscale_x4 as nscale16x4;
-pub use math_u16_impls::blend as blend16;
-
+pub use math_u16_impls::scale as scale16;
+pub use math_u16_impls::scale_video as scale16_video;
+pub use math_u8_impls::blend as blend8;
+pub use math_u8_impls::brighten_lin as brighten8_lin;
+pub use math_u8_impls::brighten_raw as brighten8_raw;
+pub use math_u8_impls::brighten_video as brighten8_video;
+pub use math_u8_impls::dim_lin as dim8_lin;
+pub use math_u8_impls::dim_raw as dim8_raw;
+pub use math_u8_impls::dim_video as dim8_video;
+pub use math_u8_impls::nscale as nscale8;
+pub use math_u8_impls::nscale_x2 as nscale8x2;
+pub use math_u8_impls::nscale_x3 as nscale8x3;
+pub use math_u8_impls::nscale_x4 as nscale8x4;
+pub use math_u8_impls::scale as scale8;
+pub use math_u8_impls::scale_video as scale8_video;
 
 /// Basic trigonometric functions for integers.
 pub trait Trig<Signed> {
@@ -166,7 +165,6 @@ pub trait ScalingInt {
     /// assert_ne!(30u8.dim_raw(), 30u8.dim_video());
     /// ```
     fn dim_video(self) -> Self;
-
 
     /// Dims an integer linearly.
     ///
@@ -357,9 +355,8 @@ macro_rules! impl_scaling_trait_rename {
     );
 }
 
-
 macro_rules! impl_scaling_trait {
-    ($t:tt) => (
+    ($t:tt) => {
         impl crate::math::ScalingInt for $t {
             impl_scaling_trait_rename!($t, other, scale);
             impl_scaling_trait_rename!($t, other, scale_video);
@@ -371,7 +368,7 @@ macro_rules! impl_scaling_trait {
             impl_scaling_trait_rename!($t, brighten_lin);
             impl_scaling_trait_rename!($t, b, amount_of_b, blend);
         }
-    )
+    };
 }
 
 pub mod math_u8_impls {

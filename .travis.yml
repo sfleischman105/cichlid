@@ -11,9 +11,8 @@ cache:
 
 sudo: required
 
-#
-#before_script:
-#  - rustup install stable-x86_64-unknown-linux-gnu
+before_script:
+  - rustup target add thumbv7em-none-eabihf
 
 os:
   - linux
@@ -27,6 +26,6 @@ script:
 after_success:
   - if [ "$TRAVIS_RUST_VERSION" == "nightly" ]; then
       cargo bench;
-      RUSTFLAGS='-C target-cpu=cortex-m4' cargo bench;
+      cargo build --features=no-std --target thumbv7em-none-eabihf;
     fi
 

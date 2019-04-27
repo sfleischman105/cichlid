@@ -3,8 +3,8 @@
 extern crate cichlid;
 extern crate test;
 
-use test::{Bencher,black_box};
-use cichlid::{ColorRGB, prelude::*};
+use cichlid::{prelude::*, ColorRGB};
+use test::{black_box, Bencher};
 
 fn rand_change(seed: &mut u64) -> u64 {
     *seed ^= *seed >> 12;
@@ -14,44 +14,45 @@ fn rand_change(seed: &mut u64) -> u64 {
 }
 
 fn create_rand_rgb_vec(rng: &mut u64, amt: usize) -> Vec<ColorRGB> {
-    (0..).take(amt)
-         .map(|_| ColorRGB::from_color_code(rand_change(rng) as u32))
-         .collect()
+    (0..)
+        .take(amt)
+        .map(|_| ColorRGB::from_color_code(rand_change(rng) as u32))
+        .collect()
 }
 
 #[bench]
 fn bench_fade_very_large_batch(b: &mut Bencher) {
-    let f = |slice: &mut [ColorRGB], fade: u8| {slice.fade_to_black(fade)};
+    let f = |slice: &mut [ColorRGB], fade: u8| slice.fade_to_black(fade);
     bench_fade_very_large(b, f);
 }
 
 #[bench]
 fn bench_fade_very_large_scale(b: &mut Bencher) {
-    let f = |slice: &mut [ColorRGB], fade: u8| {slice.iter_mut().for_each(|p| p.scale(fade))};
+    let f = |slice: &mut [ColorRGB], fade: u8| slice.iter_mut().for_each(|p| p.scale(fade));
     bench_fade_very_large(b, f);
 }
 
 #[bench]
 fn bench_fade_large_batch(b: &mut Bencher) {
-    let f = |slice: &mut [ColorRGB], fade: u8| {slice.fade_to_black(fade)};
+    let f = |slice: &mut [ColorRGB], fade: u8| slice.fade_to_black(fade);
     bench_fade_large(b, f);
 }
 
 #[bench]
 fn bench_fade_large_scale(b: &mut Bencher) {
-    let f = |slice: &mut [ColorRGB], fade: u8| {slice.iter_mut().for_each(|p| p.scale(fade))};
+    let f = |slice: &mut [ColorRGB], fade: u8| slice.iter_mut().for_each(|p| p.scale(fade));
     bench_fade_large(b, f);
 }
 
 #[bench]
 fn bench_fade_small_batch(b: &mut Bencher) {
-    let f = |slice: &mut [ColorRGB], fade: u8| {slice.fade_to_black(fade)};
+    let f = |slice: &mut [ColorRGB], fade: u8| slice.fade_to_black(fade);
     bench_fade_small(b, f);
 }
 
 #[bench]
 fn bench_fade_small_scale(b: &mut Bencher) {
-    let f = |slice: &mut [ColorRGB], fade: u8| {slice.iter_mut().for_each(|p| p.scale(fade))};
+    let f = |slice: &mut [ColorRGB], fade: u8| slice.iter_mut().for_each(|p| p.scale(fade));
     bench_fade_small(b, f);
 }
 
@@ -84,9 +85,10 @@ fn bench_fade_very_large<F: FnMut(&mut [ColorRGB], u8)>(b: &mut Bencher, f: F) {
     inner_bench_fade_over_vec(b, &mut strips, f);
 }
 
-
 fn inner_bench_fade_over_vec<F>(b: &mut Bencher, strips: &mut Vec<Vec<ColorRGB>>, mut f: F)
-    where F: FnMut(&mut [ColorRGB], u8) {
+where
+    F: FnMut(&mut [ColorRGB], u8),
+{
     b.iter(|| {
         let mut t = strips.clone();
         for fade in 0..=255 {

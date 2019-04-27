@@ -59,9 +59,9 @@
 //! [`ColorRGB`]: ../struct.ColorRGB.html
 //! [`HSV`]: ../struct.HSV.html
 
+pub mod color_impls;
 pub mod gradient;
 pub mod rainbow;
-pub mod color_impls;
 
 use crate::{ColorRGB, HSV};
 

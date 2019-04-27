@@ -3,11 +3,6 @@ use core::slice;
 #[cfg(not(feature = "no-std"))]
 use std::slice;
 
-#[cfg(feature = "no-std")]
-use core::mem;
-#[cfg(not(feature = "no-std"))]
-use std::mem;
-
 use crate::ColorRGB;
 
 // Developer note:
@@ -86,12 +81,11 @@ impl<'a> super::ColorSliceMut for &'a mut [ColorRGB] {
         let partial_g = other.g as u16 * p_other;
         let partial_b = other.b as u16 * p_other;
 
-        self.iter_mut()
-            .for_each(|p| {
-                p.r = (((p.r as u16 * p_this) + partial_r) >> 8) as u8;
-                p.g = (((p.g as u16 * p_this) + partial_g) >> 8) as u8;
-                p.b = (((p.b as u16 * p_this) + partial_b) >> 8) as u8;
-            });
+        self.iter_mut().for_each(|p| {
+            p.r = (((p.r as u16 * p_this) + partial_r) >> 8) as u8;
+            p.g = (((p.g as u16 * p_this) + partial_g) >> 8) as u8;
+            p.b = (((p.b as u16 * p_this) + partial_b) >> 8) as u8;
+        });
     }
 }
 
@@ -108,11 +102,11 @@ fn scale_post(i: u8, scale: u16) -> u8 {
 #[doc(hidden)]
 #[inline]
 pub fn batch_scale_bytes(x: &mut [u8], scale: u8) {
-    let len: usize = x.len();
     let scalar: u16 = (scale as u16) + 1;
     let (head, mid, tail) = split_align32(x);
     head.iter_mut().for_each(|m| *m = scale_post(*m, scalar));
-    mid.iter_mut().for_each(|m| *m = batch_scale(*m, scalar as u32));
+    mid.iter_mut()
+        .for_each(|m| *m = batch_scale(*m, scalar as u32));
     tail.iter_mut().for_each(|m| *m = scale_post(*m, scalar));
 }
 
@@ -134,16 +128,15 @@ fn aligned_split_u32(ptr: usize, len: usize) -> (usize, usize, usize) {
     if len <= 3 {
         return (len, 0, 0);
     }
-    let len_1 =(ptr.wrapping_sub(1) ^ 0b11) & 0b11;
+    let len_1 = (ptr.wrapping_sub(1) ^ 0b11) & 0b11;
     let len_2 = (len - len_1) & !0b11;
-    let len_3 = (len - len_1) &  0b11;
+    let len_3 = (len - len_1) & 0b11;
     debug_assert_eq!(len, len_1 + len_2 + len_3);
     debug_assert_eq!(len_2 & 0b11, 0);
     debug_assert!(len_1 <= 3);
     debug_assert!(len_3 <= 3);
     (len_1, len_2, len_3)
 }
-
 
 #[inline(always)]
 fn batch_scale(x: u32, scalar: u32) -> u32 {
@@ -193,16 +186,24 @@ mod test {
         for scale in 0..=255 {
             batch_scale_bytes(&mut buf_batch, scale);
 
-            buf_reg.iter_mut()
+            buf_reg
+                .iter_mut()
                 .for_each(|v| *v = scale_post(*v, (scale as u16) + 1));
 
-            buf_reg.iter()
+            buf_reg
+                .iter()
                 .zip(buf_batch.iter())
                 .enumerate()
                 .for_each(|(i, bytes)| {
                     if bytes.0 != bytes.1 {
-                        panic!("i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
-                                 i, i % 256, bytes.0,bytes.1,scale);
+                        panic!(
+                            "i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
+                            i,
+                            i % 256,
+                            bytes.0,
+                            bytes.1,
+                            scale
+                        );
                     }
                 });
 
@@ -215,10 +216,7 @@ mod test {
     #[test]
     fn test_batch_scale_many_buf_len() {
         for it in 0..=5000 {
-            let buffer: Vec<u8> = (0..)
-                .take(it)
-                .map(|b| b as u8)
-                .collect();
+            let buffer: Vec<u8> = (0..).take(it).map(|b| b as u8).collect();
 
             let mut buf_batch = buffer.clone();
             let mut buf_reg = buffer.clone();
@@ -235,8 +233,15 @@ mod test {
                     .enumerate()
                     .for_each(|(i, bytes)| {
                         if bytes.0 != bytes.1 {
-                            panic!("it: {}, i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
-                                   it, i, i % 256, bytes.0, bytes.1, scale);
+                            panic!(
+                                "it: {}, i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
+                                it,
+                                i,
+                                i % 256,
+                                bytes.0,
+                                bytes.1,
+                                scale
+                            );
                         }
                     });
 
@@ -250,7 +255,9 @@ mod test {
     #[test]
     fn test_batch_scale_many_alignment() {
         let mut seed: u64 = 11140122341;
-        (0..).take(40).for_each(|_| {rand_change(&mut seed);});
+        (0..).take(40).for_each(|_| {
+            rand_change(&mut seed);
+        });
 
         for it in 30..=4903 {
             rand_change(&mut seed);
@@ -280,8 +287,15 @@ mod test {
                     .take(2390)
                     .for_each(|(i, bytes)| {
                         if bytes.0 != bytes.1 {
-                            panic!("it: {}, i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
-                                   it, i, i % 256, bytes.0, bytes.1, scale);
+                            panic!(
+                                "it: {}, i: {:4} ({:3}) - reg: {:4}, batch: {:4}  - scale: {}",
+                                it,
+                                i,
+                                i % 256,
+                                bytes.0,
+                                bytes.1,
+                                scale
+                            );
                         }
                     });
 
@@ -291,7 +305,6 @@ mod test {
         }
     }
 }
-
 
 //    given:
 //    scale
@@ -327,4 +340,3 @@ mod test {
 //    R0 <- R0 AND $MASK_0_2
 //    R0 <- R0 OR R1
 //    i <- R0 [4 byte]
-
