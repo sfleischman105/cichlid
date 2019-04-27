@@ -157,6 +157,7 @@ fn batch_scale(x: u32, scalar: u32) -> u32 {
 mod test {
     use crate::color_util::color_impls::{batch_scale_bytes, scale_post};
 
+    #[allow(dead_code)]
     fn rand_change(seed: &mut u64) -> u64 {
         *seed ^= *seed >> 12;
         *seed ^= *seed << 25;
@@ -164,6 +165,7 @@ mod test {
         seed.wrapping_mul(2685_8216_5773_6338_717)
     }
 
+    #[allow(dead_code)]
     fn collapse_u64(x: u64) -> u8 {
         ((x >> 15) ^ (x >> 40) ^ x) as u8
     }

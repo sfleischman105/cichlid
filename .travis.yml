@@ -4,12 +4,10 @@ rust:
   - nightly
   - stable
 
-
 cache:
   - cargo
   - apt
 
-sudo: required
 
 before_script:
   - rustup target add thumbv7em-none-eabihf
@@ -28,4 +26,3 @@ after_success:
       cargo bench;
       cargo build --features=no-std --target thumbv7em-none-eabihf;
     fi
-

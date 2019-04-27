@@ -22,8 +22,11 @@
 //!
 //! - [`ColorIterMut`]:
 //!     - General functions applying on iterators over [`ColorRGB`]'s.
-//!     - Examples of functions: `blur()`, `fade_to_black()`, `fill()`.
+//!     - Examples of functions: `fill()`, `clear()`.
 //!     - Implemented for all Iterators over `&mut ColorRGB`.
+//! - [`ColorSliceMut`]:
+//!     - Special optimized functions implemented for slices / arrays of [`ColorRGB`]'s.
+//!     - Examples of functions: `blur()`, `fade_to_black()`, `blend()`.
 //! - [`GradientFill`]:
 //!     - Fills a Gradient from one [`HSV`] to another using Linear Interpolation.
 //!     - Implemented for any iterators implementing `ExactSizeIter`.
@@ -50,6 +53,7 @@
 //!     - Fills an Iterator with a full rainbow cycle.
 //!
 //! [`ColorIterMut`]: ./trait.ColorIterMut.html
+//! [`ColorSliceMut`]: ./trait.ColorSliceMut.html
 //! [`GradientFill`]: ./trait.GradientFill.html
 //! [`GradientFillToInclusive`]: ./trait.GradientFillToInclusive.html
 //! [`GradientFillRGB`]: ./trait.GradientFill.html
