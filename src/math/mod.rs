@@ -27,34 +27,36 @@
 
 pub(crate) mod ext;
 pub(crate) mod lerp;
-pub mod trig;
+pub(crate) mod trig;
 
-pub use math_u16_impls::blend as blend16;
-pub use math_u16_impls::brighten_lin as brighten16_lin;
-pub use math_u16_impls::brighten_raw as brighten16_raw;
-pub use math_u16_impls::brighten_video as brighten16_video;
-pub use math_u16_impls::dim_lin as dim16_lin;
-pub use math_u16_impls::dim_raw as dim16_raw;
-pub use math_u16_impls::dim_video as dim16_video;
-pub use math_u16_impls::nscale as nscale16;
-pub use math_u16_impls::nscale_x2 as nscale16x2;
-pub use math_u16_impls::nscale_x3 as nscale16x3;
-pub use math_u16_impls::nscale_x4 as nscale16x4;
-pub use math_u16_impls::scale as scale16;
-pub use math_u16_impls::scale_video as scale16_video;
-pub use math_u8_impls::blend as blend8;
-pub use math_u8_impls::brighten_lin as brighten8_lin;
-pub use math_u8_impls::brighten_raw as brighten8_raw;
-pub use math_u8_impls::brighten_video as brighten8_video;
-pub use math_u8_impls::dim_lin as dim8_lin;
-pub use math_u8_impls::dim_raw as dim8_raw;
-pub use math_u8_impls::dim_video as dim8_video;
-pub use math_u8_impls::nscale as nscale8;
-pub use math_u8_impls::nscale_x2 as nscale8x2;
-pub use math_u8_impls::nscale_x3 as nscale8x3;
-pub use math_u8_impls::nscale_x4 as nscale8x4;
-pub use math_u8_impls::scale as scale8;
-pub use math_u8_impls::scale_video as scale8_video;
+pub use math_u16_impls::blend as blend_u16;
+pub use math_u16_impls::brighten_lin as brighten_u16_lin;
+pub use math_u16_impls::brighten_raw as brighten_u16_raw;
+pub use math_u16_impls::brighten_video as brighten_u16_video;
+pub use math_u16_impls::dim_lin as dim_u16_lin;
+pub use math_u16_impls::dim_raw as dim_u16_raw;
+pub use math_u16_impls::dim_video as dim_u16_video;
+pub use math_u16_impls::nscale as nscale_u16;
+pub use math_u16_impls::nscale_x2 as nscale_u16x2;
+pub use math_u16_impls::nscale_x3 as nscale_u16x3;
+pub use math_u16_impls::nscale_x4 as nscale_u16x4;
+pub use math_u16_impls::scale as scale_u16;
+pub use math_u16_impls::scale_video as scale_u16_video;
+pub use math_u8_impls::blend as blend_u8;
+pub use math_u8_impls::brighten_lin as brighten_u8_lin;
+pub use math_u8_impls::brighten_raw as brighten_u8_raw;
+pub use math_u8_impls::brighten_video as brighten_u8_video;
+pub use math_u8_impls::dim_lin as dim_u8_lin;
+pub use math_u8_impls::dim_raw as dim_u8_raw;
+pub use math_u8_impls::dim_video as dim_u8_video;
+pub use math_u8_impls::nscale as nscale_u8;
+pub use math_u8_impls::nscale_x2 as nscale_u8x2;
+pub use math_u8_impls::nscale_x3 as nscale_u8x3;
+pub use math_u8_impls::nscale_x4 as nscale_u8x4;
+pub use math_u8_impls::scale as scale_u8;
+pub use math_u8_impls::scale_video as scale_u8_video;
+
+pub use trig::{sin_u8,cos_u8,sin_u16,cos_u16};
 
 /// Basic trigonometric functions for integers.
 pub trait Trig<Signed> {
@@ -104,7 +106,7 @@ pub trait ScalingInt {
     /// # Example
     ///
     /// ```
-    /// use cichlid::ScalingInt;
+    /// use cichlid::prelude::ScalingInt;
     ///
     /// assert_eq!(100u8.scale(255), 100); // 100 * 1.0
     /// assert_eq!(100u8.scale(0), 0); // 100 * 0.0
@@ -123,7 +125,7 @@ pub trait ScalingInt {
     /// # Example
     ///
     /// ```
-    /// use cichlid::ScalingInt;
+    /// use cichlid::prelude::ScalingInt;
     ///
     /// assert_eq!(100u8.scale_video(255), 100u8.scale(255)); // same as scale8...
     /// assert_ne!(1u8.scale_video(1),  1u8.scale(1));  // Except scale8() == 0
@@ -141,7 +143,7 @@ pub trait ScalingInt {
     /// # Example
     ///
     /// ```
-    /// use cichlid::ScalingInt;
+    /// use cichlid::prelude::ScalingInt;
     ///
     /// let full_brightness: u8 = 255;
     /// assert_eq!(255, full_brightness.dim_raw());
@@ -159,7 +161,7 @@ pub trait ScalingInt {
     /// # Example
     ///
     /// ```
-    /// use cichlid::ScalingInt;
+    /// use cichlid::prelude::ScalingInt;
     ///
     /// assert_eq!(255u8.dim_raw(), 255u8.dim_video());
     /// assert_ne!(30u8.dim_raw(), 30u8.dim_video());
@@ -371,7 +373,7 @@ macro_rules! impl_scaling_trait {
     };
 }
 
-pub mod math_u8_impls {
+mod math_u8_impls {
     //! Math functions for `u8`s. Includes scaling, dimming, brightening.
     //!
     //! Better documentation for these functions can be found under [`ScalingInt`].
@@ -381,7 +383,7 @@ pub mod math_u8_impls {
     impl_scaling_trait!(u8);
 }
 
-pub mod math_u16_impls {
+mod math_u16_impls {
     //! Math functions for `u16`s. Includes scaling, dimming, brightening.
     //!
     //! Better documentation for these functions can be found under [`ScalingInt`].

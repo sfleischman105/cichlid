@@ -100,21 +100,21 @@ impl ColorRGB {
     /// Scales all three components of a pixel by the given value.
     #[inline]
     pub fn scale(&mut self, scale: u8) {
-        nscale8x3(&mut self.r, &mut self.g, &mut self.b, scale);
+        nscale_u8x3(&mut self.r, &mut self.g, &mut self.b, scale);
     }
 
     /// Scales the current `ColorRGB` by another pixel.
     #[inline]
     pub fn scale_from_other(&mut self, other: ColorRGB) {
-        nscale8(&mut self.r, other.r);
-        nscale8(&mut self.g, other.g);
-        nscale8(&mut self.b, other.b);
+        nscale_u8(&mut self.r, other.r);
+        nscale_u8(&mut self.g, other.g);
+        nscale_u8(&mut self.b, other.b);
     }
 
     /// Fades to black by the given amount.
     #[inline]
     pub fn fade_to_black_by(&mut self, fade: u8) {
-        nscale8x3(&mut self.r, &mut self.g, &mut self.b, 255 - fade);
+        nscale_u8x3(&mut self.r, &mut self.g, &mut self.b, 255 - fade);
     }
 
     /// Maintains the ratio of red, green, and blue while maximizing brightness.
@@ -129,9 +129,9 @@ impl ColorRGB {
     #[inline]
     pub fn luma(self) -> u8 {
         let mut luma: u8 = 0;
-        luma += scale8(self.r, 54);
-        luma += scale8(self.g, 183);
-        luma += scale8(self.b, 18);
+        luma += scale_u8(self.r, 54);
+        luma += scale_u8(self.g, 183);
+        luma += scale_u8(self.b, 18);
         luma
     }
 
@@ -139,9 +139,9 @@ impl ColorRGB {
     #[inline]
     pub fn avg_light(self) -> u8 {
         let mut luma: u8 = 0;
-        luma += scale8(self.r, 85);
-        luma += scale8(self.g, 85);
-        luma += scale8(self.b, 85);
+        luma += scale_u8(self.r, 85);
+        luma += scale_u8(self.g, 85);
+        luma += scale_u8(self.b, 85);
         luma
     }
 
@@ -233,7 +233,7 @@ impl AddAssign for ColorRGB {
 impl AddAssign<u8> for ColorRGB {
     #[inline(always)]
     fn add_assign(&mut self, rhs: u8) {
-        *self += RGB!(rhs, rhs, rhs);
+        *self += mk_rgb!(rhs, rhs, rhs);
     }
 }
 
@@ -254,7 +254,7 @@ impl SubAssign for ColorRGB {
 impl SubAssign<u8> for ColorRGB {
     #[inline(always)]
     fn sub_assign(&mut self, rhs: u8) {
-        *self -= RGB!(rhs, rhs, rhs);
+        *self -= mk_rgb!(rhs, rhs, rhs);
     }
 }
 

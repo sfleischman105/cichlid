@@ -30,7 +30,7 @@ vigorous testing.
 General Color operations:
 
 ```rust
-use cichlid::*;
+use cichlid::{HSV, ColorRGB};
 
 let red = ColorRGB::Red;
 let blue = ColorRGB::Blue;
@@ -47,7 +47,7 @@ assert_eq!(purple, red + blue);
 Using `HSV` (Hue, Saturation, Value) and converting to `ColorRGB`:
 
 ```rust
-use cichlid::*;
+use cichlid::{HSV, ColorRGB};
 
 let red_hsv = HSV::new(0, 255, 255);
 let red_rgb = ColorRGB::from(red_hsv);
@@ -57,7 +57,7 @@ assert_eq!(red_rgb, ColorRGB::Red);
 Creating a gradient is very easy, simply import the trait and call the method:
 
 ```rust
-use cichlid::*;
+use cichlid::{HSV, ColorRGB, GradientDirection, prelude::*};
 let mut colors = [ColorRGB::Black; 100];
 
 let start = HSV::new(0, 255, 255);

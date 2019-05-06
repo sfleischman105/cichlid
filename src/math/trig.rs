@@ -3,7 +3,7 @@
 // Credit for most of these functions goes to the authors of the FastLED library.
 
 /// Returns the sine of a two byte integer.
-pub fn sin16(theta: u16) -> i16 {
+pub fn sin_u16(theta: u16) -> i16 {
     static BASE: [u16; 8] = [0, 6393, 12539, 18204, 23170, 27245, 30273, 32137];
     static SLOPE: [u8; 8] = [49, 48, 44, 38, 31, 23, 14, 4];
     let mut offset = (theta & 0x3FFF) >> 3;
@@ -26,20 +26,20 @@ pub fn sin16(theta: u16) -> i16 {
 
 /// Returns the cosine of a two byte integer.
 #[inline(always)]
-pub fn cos16(theta: u16) -> i16 {
-    sin16(theta.wrapping_add(16384))
+pub fn cos_u16(theta: u16) -> i16 {
+    sin_u16(theta.wrapping_add(16384))
 }
 
 /// Returns the sine of a single byte integer.
 #[inline(always)]
-pub fn sin8(theta: u8) -> u8 {
+pub fn sin_u8(theta: u8) -> u8 {
     trig_inner::sin8(theta)
 }
 
 /// Returns the cosine of a single byte integer.
 #[inline(always)]
-pub fn cos8(theta: u8) -> u8 {
-    sin8(theta.wrapping_add(64))
+pub fn cos_u8(theta: u8) -> u8 {
+    sin_u8(theta.wrapping_add(64))
 }
 
 #[cfg(feature = "low-mem")]
@@ -111,39 +111,39 @@ mod trig_inner {
 
 impl super::Trig<u8> for u8 {
     fn sin(self) -> u8 {
-        sin8(self)
+        sin_u8(self)
     }
 
     fn cos(self) -> u8 {
-        cos8(self)
+        cos_u8(self)
     }
 }
 
 impl super::Trig<i16> for u16 {
     fn sin(self) -> i16 {
-        sin16(self)
+        sin_u16(self)
     }
 
     fn cos(self) -> i16 {
-        cos16(self)
+        cos_u16(self)
     }
 }
 
 #[cfg(test)]
 mod test {
-    use crate::math::trig::{cos8, sin8};
+    use crate::math::trig::{cos_u8, sin_u8};
 
     #[test]
     fn all_sin() {
         for x in 0..=255 {
-            sin8(x);
+            sin_u8(x);
         }
     }
 
     #[test]
     fn all_cos() {
         for x in 0..=255 {
-            cos8(x);
+            cos_u8(x);
         }
     }
 

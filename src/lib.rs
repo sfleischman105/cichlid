@@ -26,7 +26,7 @@
 //! General Color operations:
 //!
 //! ```
-//! use cichlid::*;
+//! use cichlid::ColorRGB;
 //!
 //! let red = ColorRGB::Red;
 //! let blue = ColorRGB::Blue;
@@ -43,7 +43,7 @@
 //! Using `HSV` (Hue, Saturation, Value) and converting to `ColorRGB`:
 //!
 //! ```
-//! use cichlid::*;
+//! use cichlid::{HSV, ColorRGB, prelude::*};
 //!
 //! let red_hsv = HSV::new(0, 255, 255);
 //! let red_rgb = ColorRGB::from(red_hsv);
@@ -53,12 +53,25 @@
 //! Creating a gradient is very easy, simply import the trait and call the method:
 //!
 //! ```
-//! use cichlid::*;
+//! use cichlid::{HSV, ColorRGB, GradientDirection, prelude::*};
 //! let mut colors = [ColorRGB::Black; 100];
 //!
 //! let start = HSV::new(0, 255, 255);
 //! let end = HSV::new(100, 255, 180);
 //! colors.gradient_fill(start, end, GradientDirection::Longest);
+//! ```
+//!
+//! We can also create rainbows from both a step size, as well as a forming a complete rainbow.
+//!
+//! ```
+//! use cichlid::{HSV, ColorRGB, GradientDirection, prelude::*};
+//! let mut colors = [ColorRGB::Black; 256];
+//!
+//! let start_hue: u8 = 0;
+//! let hue_delta: u16 = (1 << 8);
+//!
+//! colors.rainbow_fill(start_hue, hue_delta); // From step size
+//! colors.rainbow_fill_single_cycle(start_hue); // Complete rainbow
 //! ```
 //!
 //! # no-std
@@ -92,7 +105,7 @@
 #![cfg_attr(feature = "nightly", feature(link_llvm_intrinsics))]
 //#![feature(link_llvm_intrinsics)]
 
-macro_rules! RGB {
+macro_rules! mk_rgb {
     ($r:expr, $g:expr, $b:expr) => {
         crate::rgb::ColorRGB::new($r, $g, $b)
     };
@@ -107,34 +120,35 @@ macro_rules! RGB {
 //}
 
 pub mod color_codes;
-pub mod color_util;
-pub mod hsv;
+mod color_util;
+mod hsv;
 pub mod math;
-pub mod power_mgmt;
-pub mod rgb;
+mod power_mgmt;
+mod rgb;
 
 pub use crate::color_util::GradientDirection;
 pub use crate::hsv::HSV;
-pub use crate::math::{ScalingInt, Trig};
+
 pub use crate::power_mgmt::{DefaultPowerEstimator, PowerEstimator};
-pub use crate::prelude::*;
 pub use crate::rgb::ColorRGB;
+pub use crate::color_util::gradient::{hsv_gradient,rgb_gradient};
+
 
 pub mod prelude {
     //! Easy importing of integer and color auto traits.
 
-    pub use crate::math::ScalingInt as _;
-    pub use crate::math::Trig as _;
+    pub use crate::math::ScalingInt;
+    pub use crate::math::Trig;
 
-    pub use crate::color_util::ColorIterMut as _;
-    pub use crate::color_util::ColorSliceMut as _;
+    pub use crate::color_util::ColorIterMut;
+    pub use crate::color_util::ColorSliceMut;
 
-    pub use crate::color_util::GradientFill as _;
-    pub use crate::color_util::GradientFillToInclusive as _;
+    pub use crate::color_util::GradientFill;
+    pub use crate::color_util::GradientFillToInclusive;
 
-    pub use crate::color_util::GradientFillRGB as _;
-    pub use crate::color_util::GradientFillRGBToInclusive as _;
+    pub use crate::color_util::GradientFillRGB;
+    pub use crate::color_util::GradientFillRGBToInclusive;
 
-    pub use crate::color_util::RainbowFill as _;
-    pub use crate::color_util::RainbowFillSingleCycle as _;
+    pub use crate::color_util::RainbowFill;
+    pub use crate::color_util::RainbowFillSingleCycle;
 }

@@ -79,6 +79,7 @@ where
 /// This function will fill the array inclusive of the `start` HSV and exclusive of the `end` HSV.
 /// This means that after completion, `output[output.len() - 1] will not be the end color, but
 /// rather the interpolated color before `start`.
+///
 /// # Edge Cases
 ///
 /// If `output` is empty, the operation returns immediately.

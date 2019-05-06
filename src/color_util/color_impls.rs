@@ -91,6 +91,7 @@ impl<'a> super::ColorSliceMut for &'a mut [ColorRGB] {
     }
 }
 
+/// Same as `scale_u8`, except scale has already had 1 added to it.
 #[inline(always)]
 fn scale_post(i: u8, scale: u16) -> u8 {
     (((i as u16) * scale) >> 8) as u8
@@ -115,7 +116,7 @@ pub fn batch_scale_bytes(x: &mut [u8], scale: u8) {
 fn split_align32(x: &mut [u8]) -> (&mut [u8], &mut [u32], &mut [u8]) {
     let len = x.len();
     let ptr = x.as_mut_ptr();
-    let (a, b, c) = aligned_split_u32(ptr as usize, len);
+    let (a, b, c) = aligned_split_u32_lens(ptr as usize, len);
     unsafe {
         let cap = slice::from_raw_parts_mut(ptr, a);
         let mid = slice::from_raw_parts_mut(ptr.add(a) as *mut u32, b / 4);
@@ -124,8 +125,11 @@ fn split_align32(x: &mut [u8]) -> (&mut [u8], &mut [u32], &mut [u8]) {
     }
 }
 
+/// Splits a ptr and size into three lengths. the first length is the size of
+/// the u8 portion, the second is size (in bytes!) of the u32 aligned ptr,
+/// and the third portion is the remaining unaligned bytes length.
 #[inline(always)]
-fn aligned_split_u32(ptr: usize, len: usize) -> (usize, usize, usize) {
+fn aligned_split_u32_lens(ptr: usize, len: usize) -> (usize, usize, usize) {
     if len <= 3 {
         return (len, 0, 0);
     }

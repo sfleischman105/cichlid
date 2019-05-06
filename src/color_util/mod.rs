@@ -5,13 +5,10 @@
 //!
 //! ## Importing
 //!
-//! Importing can be done by one of the following ways:
+//! Importing is done with the following:
 //!
 //! ```
-//! use cichlid::*;
 //! use cichlid::prelude::*;
-//! use cichlid::color_util::ColorIterMut;
-//! use cichlid::color_util::ColorIterMut as _;
 //! ```
 //!
 //! It is preferable to import that traits anonymously with `use ... as _`. This is because
@@ -107,7 +104,7 @@ pub trait ColorIterMut: Sized {
     /// Sets all colors to black.
     #[inline]
     fn clear(self) {
-        self.fill(RGB!(0, 0, 0));
+        self.fill(mk_rgb!(0, 0, 0));
     }
 }
 
