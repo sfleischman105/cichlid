@@ -218,8 +218,11 @@ impl IndexMut<usize> for ColorRGB {
 impl AddAssign for ColorRGB {
     #[inline(always)]
     fn add_assign(&mut self, rhs: ColorRGB) {
-        let other = unsafe { uint8x4_t(rhs.r, rhs.g, rhs.b, mem::uninitialized()) };
-        let us = unsafe { uint8x4_t(self.r, self.g, self.b, mem::uninitialized()) };
+        let (other, us) = unsafe {(
+            uint8x4_t(rhs.r, rhs.g, rhs.b, mem::transmute(mem::MaybeUninit::<u8>::uninit())),
+            uint8x4_t(self.r, self.g, self.b, mem::transmute(mem::MaybeUninit::<u8>::uninit()))
+        )};
+
         let qadd = uqadd8(us, other);
         *self = ColorRGB {
             r: qadd.0,
@@ -240,8 +243,10 @@ impl AddAssign<u8> for ColorRGB {
 impl SubAssign for ColorRGB {
     #[inline(always)]
     fn sub_assign(&mut self, rhs: ColorRGB) {
-        let other = unsafe { uint8x4_t(rhs.r, rhs.g, rhs.b, mem::uninitialized()) };
-        let us = unsafe { uint8x4_t(self.r, self.g, self.b, mem::uninitialized()) };
+        let (other, us) = unsafe {(
+            uint8x4_t(rhs.r, rhs.g, rhs.b, mem::transmute(mem::MaybeUninit::<u8>::uninit())),
+            uint8x4_t(self.r, self.g, self.b, mem::transmute(mem::MaybeUninit::<u8>::uninit()))
+        )};
         let qsub = uqsub8(us, other);
         *self = ColorRGB {
             r: qsub.0,
@@ -320,8 +325,10 @@ impl Neg for ColorRGB {
 
     #[inline(always)]
     fn neg(self) -> ColorRGB {
-        let rev = unsafe { uint8x4_t(255, 255, 255, mem::uninitialized()) };
-        let us = unsafe { uint8x4_t(self.r, self.g, self.b, mem::uninitialized()) };
+        let (rev, us) = unsafe {(
+            uint8x4_t(255, 255, 255, mem::transmute(mem::MaybeUninit::<u8>::uninit())),
+            uint8x4_t(self.r, self.g, self.b, mem::transmute(mem::MaybeUninit::<u8>::uninit()))
+        )};
         let qsub = uqsub8(rev, us);
         ColorRGB {
             r: qsub.0,
