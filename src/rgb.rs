@@ -121,8 +121,10 @@ impl ColorRGB {
     #[inline]
     pub fn maximize_brightness(&mut self) {
         let maxi: u16 = u16::from(self.r.max(self.g.max(self.b)));
-        let b_factor: u16 = (maxi * 256) / maxi;
-        self.modify_all(|c| ((b_factor * u16::from(c)) / 256) as u8);
+        if maxi > 0 {
+            let b_factor: u16 = (maxi * 256) / maxi;
+            self.modify_all(|c| ((b_factor * u16::from(c)) / 256) as u8);
+        }
     }
 
     /// Returns the luminosity of a pixel.
