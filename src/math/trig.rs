@@ -8,7 +8,7 @@ pub fn sin_u16(theta: u16) -> i16 {
     static SLOPE: [u8; 8] = [49, 48, 44, 38, 31, 23, 14, 4];
     let mut offset = (theta & 0x3FFF) >> 3;
     if (theta & 0x4000) != 0 {
-        offset = 2057 - offset;
+        offset = 2047 - offset;
     }
 
     let section: u8 = (offset / 256) as u8;
